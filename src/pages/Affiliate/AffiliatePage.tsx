@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Share2, ShoppingCart, DollarSign, Clock, BarChart2, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button'
 
-const AFFILIATE_URL = 'https://dogandbonephone.getrewardful.com'
+const AFFILIATE_URL = 'https://app.endorsely.com/programs/dog-and-bone'
 
 const HOW_IT_WORKS = [
   {
