@@ -8,7 +8,7 @@ export const PROFILES: Profile[] = [
     description:
       'For adults who want to rediscover life without the noise. Calls, texts, maps, and a camera. Nothing more.',
     price: 14900, // pence
-    stripePriceId: 'price_essential_placeholder', // Replace with real Stripe Price ID
+    stripePriceId: 'price_1TJfpyA0U8QffhzPTgIMhdtZ', // Replace with real Stripe Price ID
     targetMarket: 'Digital detox',
     includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
     features: [
@@ -28,7 +28,7 @@ export const PROFILES: Profile[] = [
     description:
       'Give your child a phone without giving them the internet. Calls, GPS, camera — no social media, no YouTube, no browser.',
     price: 14900,
-    stripePriceId: 'price_family_placeholder',
+    stripePriceId: 'price_1TJfqTA0U8QffhzPJLpJbf6m',
     targetMarket: 'Parents & children',
     popular: true,
     includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
@@ -49,7 +49,7 @@ export const PROFILES: Profile[] = [
     description:
       'The phone that just works. Large text, big icons, one-tap emergency SOS. No confusion, no clutter.',
     price: 14900,
-    stripePriceId: 'price_senior_placeholder',
+    stripePriceId: 'price_1TJfqrA0U8QffhzPbQozRaYJ',
     targetMarket: 'Seniors',
     includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
     features: [
@@ -69,7 +69,7 @@ export const PROFILES: Profile[] = [
     description:
       'A phone for people who want to stay connected, just not 24/7. Includes a browser, but with scheduled downtime built in.',
     price: 14900,
-    stripePriceId: 'price_balance_placeholder',
+    stripePriceId: 'price_1TJfr9A0U8QffhzPuihoZUEj',
     targetMarket: 'Life balance',
     includedAppIds: [
       'phone',

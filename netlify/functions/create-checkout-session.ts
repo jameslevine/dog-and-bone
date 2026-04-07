@@ -1,18 +1,15 @@
 import type { Handler, HandlerEvent } from '@netlify/functions'
 import { stripe } from './utils/stripe-client'
 import { CORS_HEADERS, handleOptions } from './utils/cors'
+import { PROFILES, ADDONS } from '../../src/data/profiles'
 
-const PRICE_IDS: Record<string, string> = {
-  essential: process.env.STRIPE_PRICE_ESSENTIAL || 'price_essential_placeholder',
-  family: process.env.STRIPE_PRICE_FAMILY || 'price_family_placeholder',
-  senior: process.env.STRIPE_PRICE_SENIOR || 'price_senior_placeholder',
-  balance: process.env.STRIPE_PRICE_BALANCE || 'price_balance_placeholder',
-}
+const PRICE_IDS: Record<string, string> = Object.fromEntries(
+  PROFILES.map((p) => [p.id, p.stripePriceId]),
+)
 
-const ADDON_PRICE_IDS: Record<string, string> = {
-  charger: process.env.STRIPE_PRICE_CHARGER || 'price_charger_placeholder',
-  'express-setup': process.env.STRIPE_PRICE_EXPRESS || 'price_express_placeholder',
-}
+const ADDON_PRICE_IDS: Record<string, string> = Object.fromEntries(
+  ADDONS.map((a) => [a.id, a.stripePriceId]),
+)
 
 interface CheckoutRequestBody {
   profileId: string
