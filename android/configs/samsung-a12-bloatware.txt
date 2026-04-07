@@ -1,0 +1,61 @@
+# Samsung Galaxy A12 — Bloatware packages to disable on every device
+# These are disabled via: adb shell pm disable-user --user 0 <package>
+# Reversible — does not require root.
+# Keep in sync with android/scripts/disable-bloatware.sh
+
+# Samsung Bixby
+com.samsung.android.bixby.agent
+com.samsung.android.bixby.wakeup
+com.samsung.android.bixby.service
+com.samsung.android.bixby.voiceinput
+com.samsung.systemui.bixby2
+com.samsung.android.voiceserviceplatform
+com.samsung.android.visionintelligence
+
+# Samsung Free / Edge Panels / One UI extras
+com.samsung.android.app.spage
+com.samsung.android.app.cocktailbarservice
+com.samsung.android.app.smartcapture
+com.samsung.android.app.galaxyfinder
+com.sec.android.easyonehand
+com.samsung.android.app.tips
+
+# Samsung Gaming services
+com.samsung.android.game.gamehome
+com.samsung.android.game.gametools
+com.samsung.android.game.gametools.watchdog
+com.samsung.android.game.gos
+
+# Samsung Kids / Watch
+com.samsung.android.kidsinstaller
+com.samsung.android.app.watchmanagersam
+
+# Samsung Cloud / Beacon
+com.samsung.android.scloud
+com.samsung.android.beaconmanager
+com.samsung.android.bbc.bbcagent
+
+# Samsung AR / Stickers
+com.samsung.android.arzone
+com.samsung.android.aremoji
+com.samsung.android.stickercenter
+
+# Microsoft pre-installs
+com.microsoft.intune.mam
+com.microsoft.launcher.enterprise
+
+# Facebook pre-install stubs
+com.facebook.appmanager
+com.facebook.services
+com.facebook.system
+
+# Google extras
+com.google.android.youtube
+com.google.android.apps.tachyon
+com.google.android.music
+com.google.android.videos
+com.google.android.apps.googleassistant
+
+# Carrier extras
+com.google.android.apps.tycho
+com.netflix.partner.activation

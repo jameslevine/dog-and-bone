@@ -1,0 +1,114 @@
+import { type Profile, type Addon } from '@/types'
+
+export const PROFILES: Profile[] = [
+  {
+    id: 'essential',
+    name: 'Essential',
+    tagline: 'Just the basics',
+    description:
+      'For adults who want to rediscover life without the noise. Calls, texts, maps, and a camera. Nothing more.',
+    price: 14900, // pence
+    stripePriceId: 'price_essential_placeholder', // Replace with real Stripe Price ID
+    targetMarket: 'Digital detox',
+    includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
+    features: [
+      'Phone calls & SMS',
+      'Camera',
+      'Google Maps',
+      'Calculator, Alarm & Clock',
+      'No social media',
+      'No browser',
+    ],
+    color: '#FFB703',
+  },
+  {
+    id: 'family',
+    name: 'Family',
+    tagline: 'Safe for little hands',
+    description:
+      'Give your child a phone without giving them the internet. Calls, GPS, camera — no social media, no YouTube, no browser.',
+    price: 14900,
+    stripePriceId: 'price_family_placeholder',
+    targetMarket: 'Parents & children',
+    popular: true,
+    includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
+    features: [
+      'Everything in Essential',
+      'Parental PIN lock',
+      'No browser at all',
+      'No social media or streaming',
+      'App changes require PIN',
+      'Emergency contact shortcut',
+    ],
+    color: '#E63946',
+  },
+  {
+    id: 'senior',
+    name: 'Senior',
+    tagline: 'Simple and safe',
+    description:
+      'The phone that just works. Large text, big icons, one-tap emergency SOS. No confusion, no clutter.',
+    price: 14900,
+    stripePriceId: 'price_senior_placeholder',
+    targetMarket: 'Seniors',
+    includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
+    features: [
+      'Everything in Essential',
+      'Large text & icons',
+      'Emergency SOS button',
+      'Simplified home screen',
+      'Pre-set emergency contacts',
+      'Loud speaker mode',
+    ],
+    color: '#2D6A4F',
+  },
+  {
+    id: 'balance',
+    name: 'Balance',
+    tagline: 'Intentional technology',
+    description:
+      'A phone for people who want to stay connected, just not 24/7. Includes a browser, but with scheduled downtime built in.',
+    price: 14900,
+    stripePriceId: 'price_balance_placeholder',
+    targetMarket: 'Life balance',
+    includedAppIds: [
+      'phone',
+      'sms',
+      'camera',
+      'gmaps',
+      'calculator',
+      'alarm',
+      'clock',
+      'browser',
+      'email',
+    ],
+    features: [
+      'Everything in Essential',
+      'Curated browser',
+      'Email',
+      'Scheduled downtime mode',
+      'Greyscale after hours',
+      'Usage time limits per app',
+    ],
+    color: '#5A4A3A',
+  },
+]
+
+export const ADDONS: Addon[] = [
+  {
+    id: 'charger',
+    name: 'USB-C Charger',
+    description: 'A quality USB-C charger included in the box.',
+    price: 1200, // pence
+    stripePriceId: 'price_charger_placeholder',
+  },
+  {
+    id: 'express-setup',
+    name: 'Express Setup',
+    description: 'Priority configuration — your phone ships within 24 hours.',
+    price: 1500,
+    stripePriceId: 'price_express_placeholder',
+  },
+]
+
+export const getProfileById = (id: string) => PROFILES.find((p) => p.id === id)

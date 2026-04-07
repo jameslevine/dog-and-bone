@@ -1,0 +1,13 @@
+# Dog and Bone — Family Profile: enabled app package names
+# Same core as Essential — no browser, no social media, no streaming.
+# Parental PIN enforced by launcher (pinEnabled: true in app-config.json).
+
+com.samsung.android.dialer
+com.samsung.android.messaging
+com.sec.android.app.camera
+com.sec.android.gallery3d
+com.google.android.apps.maps
+com.sec.android.app.popupcalculator
+com.sec.android.app.clockpackage
+com.android.contacts
+com.android.settings

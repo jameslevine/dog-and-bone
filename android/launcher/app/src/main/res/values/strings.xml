@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App -->
+    <string name="app_name">Dog and Bone</string>
+
+    <!-- Home screen -->
+    <string name="home_screen_title">Dog and Bone</string>
+
+    <!-- Emergency button -->
+    <string name="emergency_button_label">SOS</string>
+    <string name="emergency_call_failed">Could not start emergency call. Please dial manually.</string>
+    <string name="emergency_call_title">Emergency Call</string>
+    <string name="emergency_call_confirm">Call Now</string>
+    <string name="emergency_call_cancel">Cancel</string>
+
+    <!-- PIN lock -->
+    <string name="pin_setup_title">Create Parental PIN</string>
+    <string name="pin_verify_title">Enter Parental PIN</string>
+    <string name="pin_input_hint">Enter PIN</string>
+    <string name="pin_confirm_button">Confirm</string>
+    <string name="pin_set_success">PIN set successfully.</string>
+    <string name="pin_incorrect">Incorrect PIN. Try again.</string>
+    <string name="pin_too_short">PIN must be at least %d digits.</string>
+
+    <!-- Content descriptions (accessibility) -->
+    <string name="app_icon_description">%s app icon</string>
+    <string name="emergency_button_description">Emergency SOS button — tap to call for help</string>
+</resources>

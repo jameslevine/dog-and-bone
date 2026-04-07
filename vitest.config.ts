@@ -11,6 +11,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'node_modules/',
         'src/tests/',
@@ -18,6 +19,20 @@ export default defineConfig({
         '**/*.config.*',
         'src/main.tsx',
         'src/vite-env.d.ts',
+        'src/content/**',
+        'src/types/**',
+        'src/styles/**',
+        'scripts/**',
+        'android/**',
+        // Barrel re-export files (no logic to test)
+        '**/index.ts',
+        '**/index.tsx',
+        // Router config (no testable logic beyond imports)
+        'src/router/**',
+        // App.tsx (root component wiring)
+        'src/App.tsx',
+        // blog.ts uses import.meta.glob which requires Vite — tested via mocks in page tests
+        'src/services/blog.ts',
       ],
       thresholds: {
         branches: 90,

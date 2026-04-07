@@ -1,0 +1,201 @@
+import type { Handler, HandlerEvent } from '@netlify/functions'
+import { stripe } from './utils/stripe-client'
+import { CORS_HEADERS } from './utils/cors'
+
+// Samsung A12 bloatware to always disable
+const ALL_PACKAGES: string[] = [
+  'com.samsung.android.app.tips',
+  'com.samsung.android.game.gamehome',
+  'com.samsung.android.game.gos',
+  'com.samsung.android.bixby.agent',
+  'com.samsung.android.bixby.wakeup',
+  'com.samsung.android.bixby.service',
+  'com.samsung.android.voiceserviceplatform',
+  'com.samsung.android.app.cocktailbarservice',
+  'com.samsung.android.app.smartcapture',
+  'com.samsung.android.app.galaxyfinder',
+  'com.samsung.android.game.gametools',
+  'com.samsung.android.game.gametools.watchdog',
+  'com.samsung.android.provider.filterprovider',
+  'com.samsung.android.scloud',
+  'com.samsung.android.app.spage',
+  'com.samsung.android.app.watchmanagersam',
+  'com.samsung.systemui.bixby2',
+  'com.samsung.android.visionintelligence',
+  'com.sec.android.easyonehand',
+  'com.google.android.youtube',
+  'com.google.android.apps.tachyon',
+  'com.google.android.music',
+  'com.google.android.videos',
+  'com.google.android.apps.googleassistant',
+  'com.android.chrome',
+]
+
+// App ID → package name mapping
+const APP_TO_PACKAGES: Record<string, string> = {
+  phone: 'com.samsung.android.dialer',
+  sms: 'com.samsung.android.messaging',
+  whatsapp: 'com.whatsapp',
+  'facetime-video': 'com.google.android.apps.meetings',
+  email: 'com.google.android.gm',
+  gmaps: 'com.google.android.apps.maps',
+  camera: 'com.sec.android.app.camera',
+  gallery: 'com.sec.android.gallery3d',
+  steps: 'com.samsung.android.shealth',
+  calculator: 'com.sec.android.app.popupcalculator',
+  alarm: 'com.sec.android.app.clockpackage',
+  clock: 'com.sec.android.app.clockpackage',
+  calendar: 'com.google.android.calendar',
+  notes: 'com.samsung.android.app.notes',
+  weather: 'com.samsung.android.weather',
+  browser: 'com.sec.android.app.sbrowser',
+}
+
+const ALL_AVAILABLE_APP_IDS = Object.keys(APP_TO_PACKAGES)
+
+function generateScript(orderId: string, profileId: string, selectedAppIds: string[]): string {
+  const generatedAt = new Date().toISOString()
+  const appsLabel = selectedAppIds.join(', ')
+
+  // Deduplicate selected packages (alarm and clock share a package)
+  const selectedPackages = [
+    ...new Set(selectedAppIds.map((id) => APP_TO_PACKAGES[id]).filter(Boolean)),
+  ]
+
+  // Non-selected app packages (excluding already-selected)
+  const nonSelectedPackages = [
+    ...new Set(
+      ALL_AVAILABLE_APP_IDS.filter((id) => !selectedAppIds.includes(id))
+        .map((id) => APP_TO_PACKAGES[id])
+        .filter((pkg) => !selectedPackages.includes(pkg)),
+    ),
+  ]
+
+  const bloatwareLines = ALL_PACKAGES.map(
+    (pkg) => `adb shell pm disable-user --user 0 ${pkg}`,
+  ).join('\n')
+
+  const disableLines = nonSelectedPackages
+    .map((pkg) => `adb shell pm disable-user --user 0 ${pkg}`)
+    .join('\n')
+
+  const enableLines = selectedPackages
+    .map((pkg) => `adb shell pm enable --user 0 ${pkg}`)
+    .join('\n')
+
+  return `#!/bin/bash
+# ============================================================
+# Dog and Bone — Order Setup Script
+# Order: ${orderId}
+# Profile: ${profileId}
+# Apps: ${appsLabel}
+# Generated: ${generatedAt}
+# ============================================================
+
+set -e
+
+echo "🦴 Dog and Bone Setup Script"
+echo "Order: ${orderId}"
+echo "Profile: ${profileId}"
+echo ""
+
+# Check ADB connection
+if ! adb devices | grep -q "device$"; then
+  echo "❌ No device found. Connect your phone and enable USB debugging."
+  exit 1
+fi
+
+echo "📱 Device connected. Starting setup..."
+
+# --- Step 1: Disable Samsung/Google bloatware ---
+echo ""
+echo "Step 1/4: Removing bloatware..."
+${bloatwareLines}
+
+# --- Step 2: Disable non-selected apps ---
+echo ""
+echo "Step 2/4: Disabling non-selected apps..."
+${disableLines || '# No additional apps to disable'}
+
+# --- Step 3: Enable selected apps ---
+echo ""
+echo "Step 3/4: Enabling selected apps..."
+${enableLines}
+
+# --- Step 4: Install Dog and Bone Launcher ---
+echo ""
+echo "Step 4/4: Installing launcher..."
+echo "⚠️  Launcher APK installation: download from https://github.com/your-repo/releases"
+echo "    Run: adb install dog-and-bone-launcher.apk"
+
+echo ""
+echo "✅ Setup complete for order ${orderId}!"
+echo "Remember to: Set Dog and Bone as default launcher"
+echo ""
+`
+}
+
+export const handler: Handler = async (event: HandlerEvent) => {
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS_HEADERS, body: '' }
+  }
+
+  if (event.httpMethod !== 'GET') {
+    return {
+      statusCode: 405,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: 'Method not allowed' }),
+    }
+  }
+
+  const params = event.queryStringParameters ?? {}
+  const { secret, orderId } = params
+
+  if (!secret || secret !== process.env.ADMIN_SECRET) {
+    return {
+      statusCode: 401,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: 'Unauthorized' }),
+    }
+  }
+
+  if (!orderId) {
+    return {
+      statusCode: 400,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: 'orderId query parameter is required' }),
+    }
+  }
+
+  let session: Awaited<ReturnType<typeof stripe.checkout.sessions.retrieve>>
+
+  try {
+    session = await stripe.checkout.sessions.retrieve(orderId)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve session'
+    console.error('Stripe session retrieve error:', err)
+    return {
+      statusCode: 500,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: message }),
+    }
+  }
+
+  const profileId = session.metadata?.profileId ?? 'unknown'
+  const appsRaw = session.metadata?.apps ?? ''
+  const selectedAppIds = appsRaw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+
+  const scriptContent = generateScript(orderId, profileId, selectedAppIds)
+
+  return {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/x-sh',
+      'Content-Disposition': `attachment; filename="order-${orderId}-setup.sh"`,
+    },
+    body: scriptContent,
+  }
+}

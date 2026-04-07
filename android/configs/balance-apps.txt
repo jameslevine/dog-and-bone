@@ -1,0 +1,20 @@
+# Dog and Bone — Balance Profile: enabled app package names
+# Core apps + browser, email, calendar, weather, WhatsApp, Meet, Notes.
+# No social media, no streaming. Greyscale schedule encouraged.
+
+com.samsung.android.dialer
+com.samsung.android.messaging
+com.sec.android.app.camera
+com.sec.android.gallery3d
+com.google.android.apps.maps
+com.sec.android.app.popupcalculator
+com.sec.android.app.clockpackage
+com.android.contacts
+com.android.settings
+com.sec.android.app.sbrowser
+com.google.android.gm
+com.google.android.calendar
+com.samsung.android.weather
+com.whatsapp
+com.google.android.apps.meetings
+com.samsung.android.app.notes
