@@ -1,4 +1,4 @@
-import { type Profile, type Addon } from '@/types'
+import type { Profile, Addon } from '@/types'
 
 export const PROFILES: Profile[] = [
   {
