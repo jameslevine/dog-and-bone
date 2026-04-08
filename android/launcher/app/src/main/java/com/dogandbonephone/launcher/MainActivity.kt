@@ -1,6 +1,8 @@
 package com.dogandbonephone.launcher
 
+import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -52,6 +54,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // If we are Device Owner, enable full lock-task kiosk mode.
+        // This completely blocks the notification shade, status bar, and recents.
+        enableLockTaskIfDeviceOwner()
+
         config = AppConfig.load(this)
         pinManager = PinLockManager(this)
         emergencyButton = EmergencyButton(this, config)
@@ -73,6 +79,18 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         try { unregisterReceiver(systemDialogReceiver) } catch (_: Exception) {}
+    }
+
+    // ----- Device Owner / Lock Task -----
+
+    private fun enableLockTaskIfDeviceOwner() {
+        val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val adminComponent = ComponentName(this, AdminReceiver::class.java)
+        if (dpm.isDeviceOwnerApp(packageName)) {
+            // Whitelist our package for lock task mode
+            dpm.setLockTaskPackages(adminComponent, arrayOf(packageName))
+            startLockTask()
+        }
     }
 
     // ----- Immersive fullscreen -----

@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Required to enumerate installed apps and build the home screen grid -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-    <!-- Required to restore launcher as home on device restart -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- Required for emergency call / SMS feature (Senior profile) -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.SEND_SMS" />
 
@@ -17,7 +14,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DogAndBoneLauncher">
 
-        <!-- Main launcher activity — registered as both LAUNCHER and HOME -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -33,7 +29,6 @@
             </intent-filter>
         </activity>
 
-        <!-- PIN lock screen shown before Settings access on Family profile -->
         <activity
             android:name=".PinLockActivity"
             android:exported="false"
@@ -41,7 +36,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DogAndBoneLauncher" />
 
-        <!-- Emergency dialler shown on Senior profile -->
         <activity
             android:name=".EmergencyActivity"
             android:exported="false"
@@ -49,12 +43,24 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DogAndBoneLauncher" />
 
-        <!-- Boot receiver: ensures we remain the home app after restarts -->
         <receiver
             android:name=".BootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Device Owner admin receiver — enables full lock-task kiosk mode -->
+        <receiver
+            android:name=".AdminReceiver"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
 
