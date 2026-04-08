@@ -5,55 +5,38 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Bone shape: left knob top -->
-    <path
-        android:fillColor="#2C1503"
-        android:pathData="M26,36 a10,10 0 1,1 0,-0.1Z"/>
-    <!-- left knob bottom -->
-    <path
-        android:fillColor="#2C1503"
-        android:pathData="M26,72 a10,10 0 1,1 0,-0.1Z"/>
-    <!-- right knob top -->
-    <path
-        android:fillColor="#2C1503"
-        android:pathData="M82,36 a10,10 0 1,1 0,-0.1Z"/>
-    <!-- right knob bottom -->
-    <path
-        android:fillColor="#2C1503"
-        android:pathData="M82,72 a10,10 0 1,1 0,-0.1Z"/>
-    <!-- bone shaft -->
-    <rect
-        android:fillColor="#2C1503"
-        android:x="30"
-        android:y="46"
-        android:width="48"
-        android:height="16"
-        android:rx="8"/>
+    <!-- Left knob top (dark outer) -->
+    <path android:fillColor="#2C1503"
+        android:pathData="M26,26 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"/>
+    <!-- Left knob bottom (dark outer) -->
+    <path android:fillColor="#2C1503"
+        android:pathData="M26,82 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"/>
+    <!-- Right knob top (dark outer) -->
+    <path android:fillColor="#2C1503"
+        android:pathData="M82,26 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"/>
+    <!-- Right knob bottom (dark outer) -->
+    <path android:fillColor="#2C1503"
+        android:pathData="M82,82 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"/>
 
-    <!-- bone shaft fill (white) -->
-    <rect
-        android:fillColor="#FFFFFF"
-        android:x="33"
-        android:y="49"
-        android:width="42"
-        android:height="10"
-        android:rx="5"/>
+    <!-- Bone shaft (dark, rounded rect via path) -->
+    <path android:fillColor="#2C1503"
+        android:pathData="M30,46 Q30,44 32,44 L76,44 Q78,44 78,46 L78,62 Q78,64 76,64 L32,64 Q30,64 30,62 Z"/>
 
-    <!-- left knob top inner -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M26,36 a6,6 0 1,1 0,-0.1Z"/>
-    <!-- left knob bottom inner -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M26,72 a6,6 0 1,1 0,-0.1Z"/>
-    <!-- right knob top inner -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M82,36 a6,6 0 1,1 0,-0.1Z"/>
-    <!-- right knob bottom inner -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M82,72 a6,6 0 1,1 0,-0.1Z"/>
+    <!-- Bone shaft fill (white inner) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M34,49 Q34,47 36,47 L72,47 Q74,47 74,49 L74,59 Q74,61 72,61 L36,61 Q34,61 34,59 Z"/>
+
+    <!-- Left knob top (white inner) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M26,26 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"/>
+    <!-- Left knob bottom (white inner) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M26,82 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"/>
+    <!-- Right knob top (white inner) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M82,26 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"/>
+    <!-- Right knob bottom (white inner) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M82,82 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"/>
 
 </vector>
