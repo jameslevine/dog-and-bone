@@ -31,5 +31,5 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'warn',
     'no-console': ['warn', { allow: ['error', 'warn'] }],
   },
-  ignorePatterns: ['dist/', 'node_modules/', '*.config.*', 'netlify/functions/'],
+  ignorePatterns: ['dist/', 'node_modules/', '*.config.*', 'netlify/functions/', 'coverage/'],
 }

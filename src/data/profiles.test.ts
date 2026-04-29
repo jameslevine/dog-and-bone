@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PROFILES, ADDONS, getProfileById } from './profiles'
+import { PROFILES, getProfileById } from './profiles'
 
 describe('PROFILES', () => {
   it('contains four profiles', () => {
@@ -31,20 +31,6 @@ describe('PROFILES', () => {
   it('marks family profile as popular', () => {
     const family = PROFILES.find((p) => p.id === 'family')
     expect(family?.popular).toBe(true)
-  })
-})
-
-describe('ADDONS', () => {
-  it('contains at least one addon', () => {
-    expect(ADDONS.length).toBeGreaterThan(0)
-  })
-
-  it('each addon has an id, name, and price', () => {
-    ADDONS.forEach((addon) => {
-      expect(addon.id).toBeTruthy()
-      expect(addon.name).toBeTruthy()
-      expect(typeof addon.price).toBe('number')
-    })
   })
 })
 

@@ -53,7 +53,7 @@ const ASSETS: Asset[] = [
     width: 1408,
     height: 768,
     prompt:
-      'A serene morning scene, a middle-aged person sitting at a wooden kitchen table holding a simple yellow-cased smartphone, warm golden light streaming through windows, green houseplants in background, calm and intentional lifestyle, no notifications visible on screen, editorial photography, shallow depth of field, film grain, warm tones',
+      'A serene morning lifestyle scene: a woman in her 30s sitting at a rustic wooden kitchen table, hands wrapped around a ceramic mug of coffee, looking out of a sunlit window with a peaceful contented smile, a simple black smartphone face-down on the table beside her, warm golden morning light, lush green houseplants, bokeh background, professional editorial photography, Canon 5D, 85mm f/1.8, film grain, warm cream tones, no text, no screen visible',
   },
   {
     type: 'image',
@@ -61,7 +61,7 @@ const ASSETS: Asset[] = [
     width: 768,
     height: 768,
     prompt:
-      'An elderly woman in her 70s smiling warmly while using a simple smartphone, large text clearly visible on the screen, bright sunny living room, family photographs soft in background, natural window light, approachable and safe feeling, lifestyle photography, warm and inviting',
+      'Portrait of an elegant elderly woman in her early 70s, silver hair, warm genuine smile, holding a simple black smartphone to her ear mid-conversation, bright airy living room interior, soft natural window light, blurred bookshelves and family photos in background, professional lifestyle photography, shallow depth of field, warm tones, no screen visible, no text',
   },
   {
     type: 'image',
@@ -69,7 +69,7 @@ const ASSETS: Asset[] = [
     width: 960,
     height: 720,
     prompt:
-      'A parent and young child around 8 years old sitting together outdoors in a sunny park, child is holding a simple phone and looking at the parent not the screen, both smiling naturally, green grass and trees in background, warm afternoon light, candid documentary photography, genuine happy moment',
+      "Candid outdoor lifestyle photograph: a father kneeling beside his young daughter aged around 8 in a sunny park, both laughing together, the girl is looking up at her dad not at a phone, a simple smartphone tucked in the dad's shirt pocket barely visible, lush green grass, dappled afternoon sunlight through trees, shallow depth of field, warm golden tones, professional family photography, no screen visible",
   },
   {
     type: 'image',
@@ -77,7 +77,7 @@ const ASSETS: Asset[] = [
     width: 720,
     height: 960,
     prompt:
-      'A professional in their early 30s standing on a city street, phone tucked away in pocket, looking up at the sky with a calm satisfied peaceful expression, city skyline softly blurred in background, golden hour sunset light, minimal clean clothing, editorial street photography style',
+      'Portrait of a calm confident professional man in his early 30s, standing outdoors on a quiet city street at golden hour, eyes closed and face slightly tilted upward with a peaceful expression, a simple smartphone tucked away in his jacket pocket, soft bokeh city background, warm sunset light, clean minimal clothing, editorial street portrait photography, no screen visible, no text',
   },
   {
     type: 'image',
@@ -85,7 +85,7 @@ const ASSETS: Asset[] = [
     width: 1408,
     height: 768,
     prompt:
-      'A smartphone being carefully placed into a padded yellow envelope on a clean white wooden desk, a small cute dog and bone sticker on the envelope, warm soft light, minimalist flat lay photography, professional product photography style, warm cream and yellow tones',
+      'Flat lay product photography: a clean white wooden desk surface, a simple black smartphone placed neatly inside an open padded yellow mailer envelope, beside it a brown kraft label, a small bone-shaped sticker, and a yellow ribbon, soft diffused studio light from above, minimal and elegant composition, premium unboxing aesthetic, warm cream and yellow tones, professional product photography, no text visible',
   },
   {
     type: 'image',
@@ -93,7 +93,7 @@ const ASSETS: Asset[] = [
     width: 1408,
     height: 768,
     prompt:
-      'A Samsung Galaxy A12 smartphone lying on a clean wooden desk next to a small succulent plant, a yellow notebook, and a cup of tea, soft diffused natural light, premium product photography, minimalist composition, cream and yellow tones, no screen content visible',
+      'Minimal product lifestyle photograph: a single sleek black smartphone lying face-down on a smooth oak desk, beside it a small ceramic succulent pot, a yellow hardcover notebook closed, and a white ceramic mug of tea with steam rising, soft diffused natural window light, light and airy, premium product photography aesthetic, cream and warm tones, no screen visible, no text',
   },
   {
     type: 'image',
@@ -101,7 +101,7 @@ const ASSETS: Asset[] = [
     width: 1216,
     height: 640,
     prompt:
-      "A young child around 10 years old looking pensively at a bright glowing phone screen in a dimly lit bedroom, parent's silhouette visible in the doorway looking concerned, contrast between warm light from doorway and cold blue screen glow, editorial photography, documentary style, thoughtful mood",
+      "Editorial documentary photograph: a young child around 10 years old sitting alone on a bed in a dark bedroom, face illuminated by cold blue light from an unseen source below frame, expression distant and glazed, a concerned parent's silhouette visible in the warm light of the doorway behind, strong contrast between cold blue and warm amber light, moody cinematic atmosphere, professional editorial photography, no text, no screen content visible",
   },
   {
     type: 'image',
@@ -109,7 +109,7 @@ const ASSETS: Asset[] = [
     width: 1216,
     height: 640,
     prompt:
-      'Close-up of elderly hands gently holding a simple smartphone with large readable text visible on the screen, warm morning light, wooden kitchen table surface, a pair of reading glasses nearby, soft focus background, warm and tender mood, lifestyle photography',
+      'Close-up lifestyle photograph: elderly hands with gentle wrinkles holding a simple black smartphone face-down on a wooden kitchen table, beside it a cup of tea and a pair of reading glasses, soft warm morning light from the side, shallow depth of field, tender and human mood, professional lifestyle photography, no screen visible, no text',
   },
   {
     type: 'image',
@@ -117,7 +117,7 @@ const ASSETS: Asset[] = [
     width: 1216,
     height: 640,
     prompt:
-      'A person standing on a hilltop at sunrise with arms open wide, vast green landscape stretching to the horizon, no phone in sight, morning mist in valleys below, freedom and liberation feeling, travel photography style, cinematic wide shot, golden hour light',
+      'Cinematic wide landscape photograph: a lone person standing on a green hilltop at sunrise, arms outstretched wide, back to camera, vast rolling countryside stretching to the horizon, morning mist in the valleys, golden light breaking through clouds, no phone visible anywhere, pure freedom and liberation, travel photography style, wide angle, 24mm, professional nature photography, no text',
   },
   {
     type: 'image',
@@ -125,7 +125,7 @@ const ASSETS: Asset[] = [
     width: 1216,
     height: 640,
     prompt:
-      'A teenage girl around 15 sitting alone against a school corridor wall, looking at her phone with a vacant sad expression, other students blurred walking past, moody cool blue lighting, editorial documentary photography, thoughtful and concerned mood',
+      'Editorial documentary photograph: a teenage girl around 15 sitting alone on the floor against a school corridor wall, knees pulled up, looking downward with a sad withdrawn expression, other students walking past blurred in motion behind her, cool blue fluorescent corridor lighting, moody and thoughtful atmosphere, professional editorial photography, no screen visible, no text',
   },
   {
     type: 'image',
@@ -133,7 +133,7 @@ const ASSETS: Asset[] = [
     width: 1216,
     height: 640,
     prompt:
-      'Split composition: left half shows a chaotic smartphone screen covered in social media notifications and red badge counts, right half shows a peaceful sunrise with a simple phone face-down on a windowsill and a cup of tea, conceptual editorial photography, sharp contrast between digital chaos and calm morning peace',
+      'Conceptual editorial photograph: a simple black smartphone placed face-down on a wooden windowsill, beside it a steaming cup of tea in a white mug, soft warm sunrise light flooding through the window onto a peaceful morning scene, potted plant blurred in background, calm and intentional atmosphere, professional lifestyle photography, no screen visible, no text, no notifications',
   },
   {
     type: 'video',

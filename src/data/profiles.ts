@@ -1,4 +1,4 @@
-import type { Profile, Addon } from '@/types'
+import type { Profile } from '@/types'
 
 export const PROFILES: Profile[] = [
   {
@@ -8,7 +8,7 @@ export const PROFILES: Profile[] = [
     description:
       'For adults who want to rediscover life without the noise. Calls, texts, maps, and a camera. Nothing more.',
     price: 14900, // pence
-    stripePriceId: 'price_1TJfpyA0U8QffhzPTgIMhdtZ', // Replace with real Stripe Price ID
+    stripePriceId: 'price_1TJfpyA0U8QffhzPTgIMhdtZ',
     targetMarket: 'Digital detox',
     includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
     features: [
@@ -91,23 +91,6 @@ export const PROFILES: Profile[] = [
       'Usage time limits per app',
     ],
     color: '#5A4A3A',
-  },
-]
-
-export const ADDONS: Addon[] = [
-  {
-    id: 'charger',
-    name: 'USB-C Charger',
-    description: 'A quality USB-C charger included in the box.',
-    price: 1200, // pence
-    stripePriceId: 'price_charger_placeholder',
-  },
-  {
-    id: 'express-setup',
-    name: 'Express Setup',
-    description: 'Priority configuration — your phone ships within 24 hours.',
-    price: 1500,
-    stripePriceId: 'price_express_placeholder',
   },
 ]
 
