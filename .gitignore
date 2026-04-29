@@ -38,3 +38,6 @@ android/launcher/local.properties
 *.njsproj
 *.sln
 *.sw?
+
+# Local Netlify folder
+.netlify
