@@ -42,7 +42,7 @@ Custom Kotlin launcher APK + per-order ADB setup scripts.
 
 ### Phase 6 — Launch 🟢
 
-Deploy to Netlify, configure Stripe production webhook, smoke test.
+Deploy to Netlify, configure Stripe production webhook, smoke test. **COMPLETE - Site live and operational.**
 
 ### Phase 7 — Blog System 🟢
 
@@ -109,6 +109,10 @@ Production build verified clean, `.env.example` complete, operator deployment gu
 | WCAG 2.1 AA accessibility | P0 | 🟢 Complete |
 | 90% test coverage | P0 | 🟢 Complete |
 | Netlify production deployment | P0 | 🟢 Complete |
+| Stripe Price IDs updated (4 profiles) | P0 | 🟢 Complete |
+| Android launcher build system | P0 | 🟢 Complete |
+| Android launcher signed APK | P0 | 🟢 Complete |
+| Keystore backup in 1Password | P0 | 🟢 Complete |
 
 ---
 

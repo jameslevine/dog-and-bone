@@ -2,10 +2,10 @@
 
 ## 🔵 Current Task
 
-- **Task**: Post-launch monitoring and next steps
-- **Started**: 2026-04-07
-- **Context**: All 12 phases complete. Site is ready for Netlify deployment. Deployment guide written at `userInstructions/DEPLOYMENT.md`.
-- **Progress**: Build passes cleanly. `.env.example` updated. Deployment guide created.
+- **Task**: Production deployment complete - site live and operational
+- **Started**: 2026-04-29
+- **Context**: Deep dive completed. Removed add-ons, updated Stripe Price IDs, built and signed Android launcher APK.
+- **Progress**: Site deployed to Netlify with working Stripe integration. Android launcher production-ready with signed APK.
 
 ## ✅ Completed Tasks
 
@@ -46,19 +46,22 @@
 | 2026-04-07 | Per-order ADB script templates | generateScript() in generate-setup-script.ts |
 | 2026-04-07 | AI asset generation scripts | npm run generate:ai-assets via Bedrock |
 | 2026-04-07 | Phase 12: Deployment prep | Build fixed, .env.example updated, DEPLOYMENT.md written |
+| 2026-04-29 | Remove add-on products | Removed ADDONS array, updated checkout function, fixed ESLint config |
+| 2026-04-29 | Update Stripe Price IDs | Created 4 products in Stripe test mode, updated profiles.ts |
+| 2026-04-29 | Android launcher build system | Added build-launcher.sh, sign-release.sh, Gradle wrapper fixed |
+| 2026-04-29 | Android keystore setup | Created production keystore, signed release APK (4.8MB) |
+| 2026-04-29 | Keystore backup | Encrypted with GPG, stored in 1Password |
+| 2026-04-29 | Production deployment | Site live on Netlify with working Stripe checkout |
 
 ## 🔴 Blocked / Pending
 
-- Stripe Price IDs — must be created in Stripe dashboard and added as Netlify env vars (see `userInstructions/DEPLOYMENT.md`)
-- Netlify site URL — needed to configure the Stripe webhook endpoint
-- Real AI-generated images and videos — run `npm run generate:ai-assets` once AWS Bedrock is configured
-- Business mailing address — needed for `/send-your-phone` success confirmation text
-- Android launcher APK — custom Kotlin launcher to be built and sideloaded per order
+None - all critical blockers resolved!
 
 ## ⏭️ Next Up
 
-1. Monitor Stripe dashboard for first test orders
-2. Set up Google Analytics or Plausible (optional)
-3. Generate AI images via `npm run generate:ai-assets` (requires AWS Bedrock access)
-4. Build and sideload the Android launcher APK (`android/` folder)
-5. Switch Stripe to live mode once test orders are confirmed working (see Section 6 of DEPLOYMENT.md)
+1. Test signed Android launcher APK on Samsung A12 device
+2. Switch Stripe to live mode for real payments (see Section 6 of DEPLOYMENT.md)
+3. Configure production Stripe webhook endpoint (replace test webhook)
+4. Monitor first live orders and test order fulfillment workflow
+5. (Optional) Generate AI videos via `npm run generate:ai-assets`
+6. (Optional) Set up Google Analytics or Plausible
