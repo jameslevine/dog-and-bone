@@ -4,6 +4,7 @@ import { CORS_HEADERS } from './utils/cors'
 
 // Samsung A12 bloatware to always disable
 const ALL_PACKAGES: string[] = [
+  'com.sec.android.app.launcher', // CRITICAL: Disable Samsung launcher so Dog and Bone is the only option
   'com.samsung.android.app.tips',
   'com.samsung.android.game.gamehome',
   'com.samsung.android.game.gos',

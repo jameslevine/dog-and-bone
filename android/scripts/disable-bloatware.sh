@@ -113,7 +113,7 @@ echo "  Done."
 echo ""
 
 # ---- Google & carrier extras ----
-echo "Step 9/9: Disabling Google & carrier extras..."
+echo "Step 9/10: Disabling Google & carrier extras..."
 disable_pkg "com.google.android.youtube"
 disable_pkg "com.google.android.apps.tachyon"
 disable_pkg "com.google.android.music"
@@ -124,8 +124,17 @@ disable_pkg "com.netflix.partner.activation"
 echo "  Done."
 echo ""
 
+# ---- CRITICAL: Disable Samsung Launcher ----
+echo "Step 10/10: Disabling Samsung default launcher (CRITICAL)..."
+echo "  ⚠️  This prevents users from accessing Samsung launcher"
+echo "  ⚠️  Dog and Bone will be the ONLY launcher on the device"
+disable_pkg "com.sec.android.app.launcher"
+echo "  Done."
+echo ""
+
 echo "============================================================"
-echo " Bloatware removal complete."
-echo " ${DEVICE_SERIAL} is ready for profile setup."
+echo " ✅ Bloatware removal complete."
+echo " ✅ Samsung launcher disabled."
+echo " ${DEVICE_SERIAL} is ready for Dog and Bone launcher installation."
 echo "============================================================"
 echo ""
