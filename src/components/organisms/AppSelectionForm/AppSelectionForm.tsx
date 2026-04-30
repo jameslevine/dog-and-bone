@@ -22,9 +22,17 @@ const validationSchema = Yup.object({
   customRequest: Yup.string().max(500, 'Please keep your request under 500 characters'),
 })
 
-export function AppSelectionForm({ profileId, onSubmit }: AppSelectionFormProps) {
-  const { selectedAppIds, toggleApp, setProfile, customAppsRequest, setCustomAppsRequest } =
-    useCustomizationStore()
+export function AppSelectionForm({
+  onSubmit,
+}: Omit<AppSelectionFormProps, 'profileId'> & { profileId?: string }) {
+  const {
+    profileId,
+    selectedAppIds,
+    toggleApp,
+    setProfile,
+    customAppsRequest,
+    setCustomAppsRequest,
+  } = useCustomizationStore()
 
   const appsByCategory = getAppsByCategory()
   const categoryKeys = Object.keys(appsByCategory)

@@ -56,8 +56,25 @@ describe('CustomizePage', () => {
         <CustomizePage />
       </MemoryRouter>,
     )
-    // After render, customization store should be synced to family
-    expect(useCustomizationStore.getState().profileId).toBe('family')
+    // After render, customization store should keep existing profile (not overwrite)
+    // This allows users to switch profiles using preset buttons
+    expect(useCustomizationStore.getState().profileId).toBe('essential')
+  })
+
+  it('initializes customization store when profileId is null', () => {
+    useCartStore.setState({ itemCount: 1, profileId: 'senior' })
+    useCustomizationStore.setState({
+      profileId: null,
+      selectedAppIds: [],
+      customAppsRequest: '',
+    })
+    render(
+      <MemoryRouter>
+        <CustomizePage />
+      </MemoryRouter>,
+    )
+    // When customProfileId is null, it should sync from cart
+    expect(useCustomizationStore.getState().profileId).toBe('senior')
   })
 
   it('renders the AppSelectionForm', () => {

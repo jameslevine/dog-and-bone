@@ -22,11 +22,12 @@ export function CustomizePage() {
       navigate('/store', { replace: true })
       return
     }
-    // Sync customization store with cart if not already set
-    if (!customProfileId || customProfileId !== cartProfileId) {
+    // Sync customization store with cart ONLY if not already set
+    if (!customProfileId) {
       setProfile(cartProfileId as ProfileId)
     }
-  }, [cartProfileId, customProfileId, setProfile, navigate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartProfileId, navigate]) // Only re-run if cartProfileId or navigation changes, not customProfileId
 
   if (!cartProfileId) {
     return null
@@ -59,7 +60,7 @@ export function CustomizePage() {
 
       {/* Form */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-        <AppSelectionForm profileId={cartProfileId} onSubmit={handleSubmit} />
+        <AppSelectionForm profileId={customProfileId || cartProfileId} onSubmit={handleSubmit} />
       </div>
     </div>
   )
