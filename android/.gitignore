@@ -9,3 +9,4 @@ build-output/
 launcher/app/build/
 launcher/.gradle/
 launcher/local.properties
+apks/*.apk

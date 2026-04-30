@@ -32,7 +32,7 @@ const ALL_PACKAGES: string[] = [
   'com.android.chrome',
 ]
 
-// App ID → package name mapping
+// App ID → package name mapping with installation metadata
 const APP_TO_PACKAGES: Record<string, string> = {
   phone: 'com.samsung.android.dialer',
   sms: 'com.samsung.android.messaging',
@@ -50,6 +50,14 @@ const APP_TO_PACKAGES: Record<string, string> = {
   notes: 'com.samsung.android.app.notes',
   weather: 'com.samsung.android.weather',
   browser: 'com.sec.android.app.sbrowser',
+}
+
+// Apps that are NOT pre-installed and need APK files
+const REQUIRES_APK_INSTALL: Record<string, string> = {
+  'com.whatsapp': 'whatsapp.apk',
+  'com.google.android.apps.meetings': 'google-meet.apk',
+  'org.thoughtcrime.securesms': 'signal.apk',
+  'org.telegram.messenger': 'telegram.apk',
 }
 
 const ALL_AVAILABLE_APP_IDS = Object.keys(APP_TO_PACKAGES)
@@ -85,6 +93,29 @@ function generateScript(orderId: string, profileId: string, selectedAppIds: stri
 
   const enableLines = selectedPackages
     .map((pkg) => `adb shell pm enable --user 0 ${pkg}`)
+    .join('\n')
+
+  // Identify packages that need APK installation
+  const packagesNeedingInstall = selectedPackages.filter((pkg) => REQUIRES_APK_INSTALL[pkg])
+
+  const installLines = packagesNeedingInstall
+    .map((pkg) => {
+      const apkFile = REQUIRES_APK_INSTALL[pkg]
+      return `
+# Check if ${pkg} is installed
+if ! adb shell pm list packages | grep -q "^package:${pkg}$"; then
+  echo "  📦 ${pkg} not installed - attempting install from APK library..."
+  if [ -f "apks/${apkFile}" ]; then
+    adb install apks/${apkFile}
+    echo "  ✅ ${pkg} installed from apks/${apkFile}"
+  else
+    echo "  ⚠️  apks/${apkFile} not found. Download from official source and place in apks/ directory"
+    echo "     The app will not appear in the launcher until installed."
+  fi
+else
+  echo "  ✅ ${pkg} already installed"
+fi`
+    })
     .join('\n')
 
   // Generate app-config.json for launcher
@@ -125,22 +156,27 @@ echo "📱 Device connected. Starting setup..."
 
 # --- Step 1: Disable Samsung/Google bloatware ---
 echo ""
-echo "Step 1/4: Removing bloatware..."
+echo "Step 1/10: Removing bloatware..."
 ${bloatwareLines}
 
 # --- Step 2: Disable non-selected apps ---
 echo ""
-echo "Step 2/4: Disabling non-selected apps..."
+echo "Step 2/10: Disabling non-selected apps..."
 ${disableLines || '# No additional apps to disable'}
 
-# --- Step 3: Enable selected apps ---
+# --- Step 3: Install missing apps from APK library ---
 echo ""
-echo "Step 3/4: Enabling selected apps..."
+echo "Step 3/8: Installing missing apps (if needed)..."
+${installLines || '# No apps require installation - all pre-installed on device'}
+
+# --- Step 4: Enable selected apps ---
+echo ""
+echo "Step 4/8: Enabling selected apps..."
 ${enableLines}
 
-# --- Step 4: Push launcher configuration ---
+# --- Step 5: Push launcher configuration ---
 echo ""
-echo "Step 4/6: Creating launcher configuration..."
+echo "Step 5/10: Creating launcher configuration..."
 
 # Create temp config file
 cat > /tmp/dog-and-bone-config.json << 'CONFIG_EOF'
@@ -153,7 +189,7 @@ echo "✅ Configuration pushed to device"
 
 # --- Step 5: Install Dog and Bone Launcher ---
 echo ""
-echo "Step 5/6: Installing launcher APK..."
+echo "Step 6/10: Installing launcher APK..."
 echo "⚠️  Place the signed launcher APK in the same directory as this script"
 echo "    and name it: dog-and-bone-launcher.apk"
 
@@ -166,7 +202,7 @@ fi
 
 # --- Step 6: Set as Device Owner (CRITICAL for complete lockdown) ---
 echo ""
-echo "Step 6/8: Setting Device Owner mode (complete lockdown)..."
+echo "Step 7/10: Setting Device Owner mode (complete lockdown)..."
 echo ""
 echo "⚠️  DEVICE MUST HAVE NO ACCOUNTS (Google, Samsung, Microsoft)"
 echo "    If this fails, factory reset and skip all accounts during setup"
@@ -189,7 +225,7 @@ fi
 
 # --- Step 7: Set as default launcher ---
 echo ""
-echo "Step 7/8: Setting as default home launcher..."
+echo "Step 8/10: Setting as default home launcher..."
 echo ""
 echo "On the phone, complete these steps:"
 echo "  1. Go to: Settings → Apps → Default apps → Home app"
@@ -199,7 +235,7 @@ echo ""
 
 # --- Step 8: Final verification ---
 echo ""
-echo "Step 8/8: Launching Dog and Bone..."
+echo "Step 9/10: Launching Dog and Bone..."
 adb shell am start -n com.dogandbonephone.launcher/.MainActivity
 
 echo ""
@@ -213,11 +249,37 @@ ${profileId === 'senior' ? 'echo "Large text mode: ENABLED"\necho "Emergency SOS
 ${profileId === 'family' ? 'echo "PIN lock: ENABLED (user will set PIN on first launch)"' : ''}
 echo "Device Owner: ENABLED (full kiosk lockdown)"
 echo ""
+
+# --- Step 10: Final verification ---
+echo ""
+echo "Step 10/10: Verifying installation..."
+echo ""
+
+# Check which requested apps are actually available
+echo "Checking app availability:"
+${selectedPackages
+  .map((pkg) => {
+    const appName = Object.keys(APP_TO_PACKAGES).find((k) => APP_TO_PACKAGES[k] === pkg) || pkg
+    return `
+if adb shell pm list packages | grep -q "^package:${pkg}$"; then
+  if adb shell pm list packages -d | grep -q "^package:${pkg}$"; then
+    echo "  ⚠️  ${appName} (${pkg}) - DISABLED (enable it manually)"
+  else
+    echo "  ✅ ${appName} (${pkg}) - Available"
+  fi
+else
+  echo "  ❌ ${appName} (${pkg}) - NOT INSTALLED"
+fi`
+  })
+  .join('')}
+
+echo ""
 echo "🧪 Test the device:"
 echo "  - Press Home button → Should do NOTHING"
-echo "  - Press Back button → Should do NOTHING"
+echo "  - Press Back button in launcher → Should do NOTHING"
 echo "  - Open an app → Cannot exit to other launchers"
-echo "  - Reboot device → Launcher auto-starts"
+echo "  - Reboot device → Dog and Bone auto-starts"
+echo "  - Notification shade → BLOCKED"
 echo ""
 echo "📦 Ready to ship!"
 echo ""
