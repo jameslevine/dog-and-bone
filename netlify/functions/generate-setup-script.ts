@@ -84,15 +84,15 @@ function generateScript(orderId: string, profileId: string, selectedAppIds: stri
   ]
 
   const bloatwareLines = ALL_PACKAGES.map(
-    (pkg) => `adb shell pm disable-user --user 0 ${pkg}`,
+    (pkg) => `adb shell pm disable-user --user 0 ${pkg} 2>/dev/null || true`,
   ).join('\n')
 
   const disableLines = nonSelectedPackages
-    .map((pkg) => `adb shell pm disable-user --user 0 ${pkg}`)
+    .map((pkg) => `adb shell pm disable-user --user 0 ${pkg} 2>/dev/null || true`)
     .join('\n')
 
   const enableLines = selectedPackages
-    .map((pkg) => `adb shell pm enable --user 0 ${pkg}`)
+    .map((pkg) => `adb shell pm enable --user 0 ${pkg} 2>/dev/null || true`)
     .join('\n')
 
   // Identify packages that need APK installation
@@ -183,9 +183,13 @@ cat > /tmp/dog-and-bone-config.json << 'CONFIG_EOF'
 ${appConfigJson}
 CONFIG_EOF
 
-# Push config to device
+# Push config to device (both locations for compatibility)
 adb push /tmp/dog-and-bone-config.json /sdcard/Android/data/com.dogandbonephone.launcher/files/app-config.json
-echo "✅ Configuration pushed to device"
+echo "✅ Configuration pushed to external storage"
+
+# Also push to app-specific directory (preferred, no permissions needed)
+adb shell mkdir -p /sdcard/Android/data/com.dogandbonephone.launcher/files
+adb push /tmp/dog-and-bone-config.json /sdcard/Android/data/com.dogandbonephone.launcher/files/app-config.json
 
 # --- Step 5: Install Dog and Bone Launcher ---
 echo ""

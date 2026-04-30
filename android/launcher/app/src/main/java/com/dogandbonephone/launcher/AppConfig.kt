@@ -22,23 +22,53 @@ data class AppConfig(
 ) {
     companion object {
 
-        private const val EXTERNAL_CONFIG_PATH =
-            "Android/data/com.dogandbonephone.launcher/files/app-config.json"
-
         fun load(context: Context): AppConfig {
-            val json = readExternalConfig() ?: readBundledConfig(context)
+            // Try multiple config sources in priority order
+            val json = readExternalFilesConfig(context)
+                ?: readExternalStorageConfig()
+                ?: readBundledConfig(context)
+
+            android.util.Log.d("DogAndBone", "Loaded config: ${json.take(150)}")
             return parseJson(json)
         }
 
-        /** Reads from external storage — allows ADB push to override bundled config. */
-        private fun readExternalConfig(): String? {
+        /** Reads from app-specific external files directory (no permission needed, best option). */
+        private fun readExternalFilesConfig(context: Context): String? {
+            return try {
+                val file = File(context.getExternalFilesDir(null), "app-config.json")
+                android.util.Log.d("DogAndBone", "Checking app files config at: ${file.absolutePath}")
+                if (file.exists() && file.canRead()) {
+                    val content = file.readText()
+                    android.util.Log.d("DogAndBone", "✅ External app files config loaded")
+                    content
+                } else {
+                    android.util.Log.d("DogAndBone", "App files config not found")
+                    null
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("DogAndBone", "Error reading app files config", e)
+                null
+            }
+        }
+
+        /** Reads from legacy external storage path (requires permission on Android 11+). */
+        private fun readExternalStorageConfig(): String? {
             return try {
                 val file = File(
                     android.os.Environment.getExternalStorageDirectory(),
-                    EXTERNAL_CONFIG_PATH
+                    "Android/data/com.dogandbonephone.launcher/files/app-config.json"
                 )
-                if (file.exists()) file.readText() else null
+                android.util.Log.d("DogAndBone", "Checking legacy external storage at: ${file.absolutePath}")
+                if (file.exists() && file.canRead()) {
+                    val content = file.readText()
+                    android.util.Log.d("DogAndBone", "✅ External storage config loaded")
+                    content
+                } else {
+                    android.util.Log.d("DogAndBone", "Legacy config not found or not readable")
+                    null
+                }
             } catch (e: Exception) {
+                android.util.Log.e("DogAndBone", "Error reading external storage config", e)
                 null
             }
         }
