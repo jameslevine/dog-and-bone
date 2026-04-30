@@ -8,8 +8,7 @@
     "com.google.android.apps.maps",
     "com.sec.android.app.popupcalculator",
     "com.sec.android.app.clockpackage",
-    "com.android.contacts",
-    "com.android.settings"
+    "com.android.contacts"
   ],
   "showEmergencyButton": false,
   "pinEnabled": false,

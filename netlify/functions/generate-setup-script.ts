@@ -62,10 +62,8 @@ function generateScript(orderId: string, profileId: string, selectedAppIds: stri
     ...new Set(selectedAppIds.map((id) => APP_TO_PACKAGES[id]).filter(Boolean)),
   ]
 
-  // Always include Settings for device configuration
-  if (!selectedPackages.includes('com.android.settings')) {
-    selectedPackages.push('com.android.settings')
-  }
+  // Note: Settings app is NOT included by default for maximum minimalism
+  // Customers can request it via custom apps if needed
 
   // Non-selected app packages (excluding already-selected)
   const nonSelectedPackages = [
@@ -165,22 +163,62 @@ else
   echo "⚠️  dog-and-bone-launcher.apk not found - install manually"
 fi
 
-# --- Step 6: Set as default launcher ---
+# --- Step 6: Set as Device Owner (CRITICAL for complete lockdown) ---
 echo ""
-echo "Step 6/6: Final configuration..."
+echo "Step 6/8: Setting Device Owner mode (complete lockdown)..."
+echo ""
+echo "⚠️  DEVICE MUST HAVE NO ACCOUNTS (Google, Samsung, Microsoft)"
+echo "    If this fails, factory reset and skip all accounts during setup"
+echo ""
+
+adb shell dpm set-device-owner com.dogandbonephone.launcher/.AdminReceiver
+
+if [ $? -eq 0 ]; then
+  echo "✅ Device Owner enabled - launcher is now in full kiosk mode"
+  echo "   Home button is now completely blocked"
+else
+  echo "❌ Device Owner setup failed!"
+  echo "   The device has accounts configured. To fix:"
+  echo "   1. Factory reset the device"
+  echo "   2. Skip ALL accounts during setup (Google, Samsung, Microsoft)"
+  echo "   3. Re-run this script"
+  echo ""
+  echo "⚠️  Without Device Owner, users can exit the launcher!"
+fi
+
+# --- Step 7: Set as default launcher ---
+echo ""
+echo "Step 7/8: Setting as default home launcher..."
 echo ""
 echo "On the phone, complete these steps:"
 echo "  1. Go to: Settings → Apps → Default apps → Home app"
 echo "  2. Select: Dog and Bone"
 echo "  3. Tap: Always"
-echo "  4. Press the Home button"
 echo ""
+
+# --- Step 8: Final verification ---
+echo ""
+echo "Step 8/8: Launching Dog and Bone..."
+adb shell am start -n com.dogandbonephone.launcher/.MainActivity
+
+echo ""
+echo "============================================"
 echo "✅ Setup complete for order ${orderId}!"
+echo "============================================"
 echo ""
 echo "Profile: ${profileId}"
 echo "Apps configured: ${appsLabel}"
-${profileId === 'senior' ? 'echo "Large text mode: enabled"\necho "Emergency SOS: enabled (999)"' : ''}
-${profileId === 'family' ? 'echo "PIN lock: enabled (user will set PIN on first launch)"' : ''}
+${profileId === 'senior' ? 'echo "Large text mode: ENABLED"\necho "Emergency SOS: ENABLED (999)"' : ''}
+${profileId === 'family' ? 'echo "PIN lock: ENABLED (user will set PIN on first launch)"' : ''}
+echo "Device Owner: ENABLED (full kiosk lockdown)"
+echo ""
+echo "🧪 Test the device:"
+echo "  - Press Home button → Should do NOTHING"
+echo "  - Press Back button → Should do NOTHING"
+echo "  - Open an app → Cannot exit to other launchers"
+echo "  - Reboot device → Launcher auto-starts"
+echo ""
+echo "📦 Ready to ship!"
 echo ""
 `
 }

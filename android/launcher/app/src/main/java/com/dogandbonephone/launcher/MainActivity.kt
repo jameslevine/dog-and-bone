@@ -54,13 +54,14 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // If we are Device Owner, enable full lock-task kiosk mode.
-        // This completely blocks the notification shade, status bar, and recents.
-        enableLockTaskIfDeviceOwner()
-
+        // Load config FIRST (needed for lock-task whitelist)
         config = AppConfig.load(this)
         pinManager = PinLockManager(this)
         emergencyButton = EmergencyButton(this, config)
+
+        // If we are Device Owner, enable full lock-task kiosk mode.
+        // This completely blocks the notification shade, status bar, and recents.
+        enableLockTaskIfDeviceOwner()
 
         setupAppGrid()
         setupEmergencyButton()
@@ -100,8 +101,24 @@ class MainActivity : AppCompatActivity() {
         val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(this, AdminReceiver::class.java)
         if (dpm.isDeviceOwnerApp(packageName)) {
-            // Whitelist our package for lock task mode
-            dpm.setLockTaskPackages(adminComponent, arrayOf(packageName))
+            // Whitelist our package AND all configured apps for lock task mode
+            // This allows users to launch and use the whitelisted apps
+            // Also include system packages for calls, SMS, contacts
+            val systemPackages = listOf(
+                "com.android.server.telecom",  // Emergency call handling
+                "com.android.incallui",        // In-call UI
+                "com.android.dialer",          // Dialer
+                "com.android.contacts",        // Contacts picker
+                "com.android.phone",           // Phone system
+                "com.android.mms",             // MMS/SMS system
+                "com.android.settings"         // Settings (for emergency access)
+            )
+            val whitelistedPackages = listOf(packageName) + config.apps + systemPackages
+            dpm.setLockTaskPackages(adminComponent, whitelistedPackages.distinct().toTypedArray())
+
+            // Disable key guard (removes navigation bar entirely if possible)
+            dpm.setKeyguardDisabled(adminComponent, true)
+
             startLockTask()
         }
     }
