@@ -11,28 +11,28 @@ const HOW_IT_WORKS = [
     icon: Share2,
     title: 'Share your link',
     description:
-      'Get your unique referral link from the Rewardful dashboard. Share it on your blog, social channels, or with friends and family.',
+      'Get your unique referral link from the Endorsely dashboard. Share it on your blog, social channels, or with friends and family.',
   },
   {
     step: 2,
     icon: ShoppingCart,
     title: 'Friend buys a phone',
     description:
-      'When someone clicks your link and purchases a Dog and Bone phone within 30 days, the sale is attributed to you.',
+      'When someone clicks your link and purchases a Dog and Bone phone, the sale is attributed to you - no time limit.',
   },
   {
     step: 3,
     icon: DollarSign,
     title: 'You earn a reward',
     description:
-      'Choose 10% cash commission paid monthly, or give your friend a £15 discount code — a great way to sweeten the deal.',
+      'You earn 10% cash commission AND your friend gets 10% off their order. Everyone wins!',
   },
 ]
 
 const STATS = [
   { label: 'Average order value', value: '£149' },
-  { label: 'Cash commission', value: '10%' },
-  { label: 'Cookie duration', value: '30 days' },
+  { label: 'Your commission', value: '10%' },
+  { label: 'Friend discount', value: '10%' },
   { label: 'Minimum payout', value: '£0' },
 ]
 
@@ -57,9 +57,9 @@ const FAQS = [
       'A sale is confirmed once the order has been fulfilled and the 14-day return window has passed. This protects against refunded orders being paid out.',
   },
   {
-    question: 'Can I choose between commission and a discount code?',
+    question: 'Do I have to choose between commission and discount?',
     answer:
-      'Yes. You can switch between earning 10% cash commission per sale or generating a £15 discount code to pass on to your referral. You set this per link in the dashboard.',
+      'No! You earn 10% commission AND your friend automatically gets 10% off. Both rewards apply to every sale.',
   },
   {
     question: 'Is there an approval process?',
