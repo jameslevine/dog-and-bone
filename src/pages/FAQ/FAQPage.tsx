@@ -12,10 +12,6 @@ export function FAQPage() {
           a: `The phone is configured in Device Owner mode with complete lockdown. This means you cannot add apps without a factory reset. Choose your apps carefully during checkout!`,
         },
         {
-          q: `What happens if I factory reset the phone?`,
-          a: `A factory reset removes all configuration and returns the phone to standard Samsung settings. You'll have access to all apps again.`,
-        },
-        {
           q: `Can I use the phone with my existing SIM card?`,
           a: `Yes! The phone is unlocked and works with any UK carrier SIM card.`,
         },
