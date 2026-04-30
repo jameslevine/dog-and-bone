@@ -72,6 +72,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
       metadata: {
         profileId,
         apps: Array.isArray(apps) ? apps.join(',') : '',
+        endorsely_referral: referralId || '',
       },
       client_reference_id: referralId || undefined,
       success_url: successUrl,

@@ -4,8 +4,7 @@ import { Logo } from '@/components/atoms/Logo'
 const FOOTER_LINKS = {
   Phones: [
     { to: '/store', label: 'Buy a Phone' },
-    { to: '/send-your-phone', label: 'Send Your Phone' },
-    { to: '/setup-guide', label: 'Setup Guide' },
+    { to: '/faq', label: 'FAQ' },
   ],
   Company: [
     { to: '/about', label: 'About Us' },

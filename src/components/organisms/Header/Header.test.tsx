@@ -37,9 +37,9 @@ describe('Header', () => {
     expect(screen.getByRole('button', { name: /close menu/i })).toBeInTheDocument()
   })
 
-  it('shows "Send Your Phone" nav link', () => {
+  it('shows "FAQ" nav link', () => {
     renderHeader()
-    expect(screen.getAllByText('Send Your Phone').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('FAQ').length).toBeGreaterThan(0)
   })
 
   it('renders the mobile Shop Now button inside the mobile nav', () => {

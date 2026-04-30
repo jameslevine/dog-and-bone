@@ -24,6 +24,7 @@ interface CheckoutBody {
   addons: string[]
   successUrl: string
   cancelUrl: string
+  referralId: string | null
 }
 
 async function createCheckoutSession(body: CheckoutBody): Promise<CheckoutSessionResponse> {
@@ -66,12 +67,18 @@ export function CheckoutPage() {
 
   const handlePayNow = () => {
     setApiError(null)
+
+    // Get Endorsely referral ID if present
+    const endorselyWindow = window as Window & { endorsely_referral?: string }
+    const referralId = endorselyWindow.endorsely_referral || null
+
     mutation.mutate({
       profileId: profile.id,
       apps: selectedAppIds,
       addons: [],
       successUrl: `${window.location.origin}/checkout/success`,
       cancelUrl: `${window.location.origin}/checkout/cancel`,
+      referralId,
     })
   }
 

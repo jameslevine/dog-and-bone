@@ -8,8 +8,8 @@ import { cn } from '@/utils/cn'
 
 const NAV_LINKS = [
   { to: '/store', label: 'Buy a Phone' },
-  { to: '/send-your-phone', label: 'Send Your Phone' },
   { to: '/blog', label: 'Blog' },
+  { to: '/faq', label: 'FAQ' },
   { to: '/about', label: 'About' },
 ]
 
