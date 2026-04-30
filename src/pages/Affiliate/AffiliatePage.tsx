@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom'
 import { Share2, ShoppingCart, DollarSign, Clock, BarChart2, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button'
 
-const AFFILIATE_URL = 'https://app.endorsely.com/programs/dog-and-bone'
+// Update this URL once your Endorsely program is live
+const AFFILIATE_URL = 'https://endorsely.com/register' // Default Endorsely sign-up page
 
 const HOW_IT_WORKS = [
   {
