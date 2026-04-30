@@ -65,6 +65,19 @@ class MainActivity : AppCompatActivity() {
         setupAppGrid()
         setupEmergencyButton()
         setupPinFirstRun()
+
+        // Apply large text mode for senior profile
+        if (config.largeText) {
+            applyLargeTextMode()
+        }
+    }
+
+    private fun applyLargeTextMode() {
+        // Increase system font scale for this activity
+        val configuration = resources.configuration
+        configuration.fontScale = 1.3f  // 30% larger text
+        @Suppress("DEPRECATION")
+        resources.updateConfiguration(configuration, resources.displayMetrics)
     }
 
     override fun onResume() {

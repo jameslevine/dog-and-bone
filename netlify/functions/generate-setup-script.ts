@@ -62,6 +62,11 @@ function generateScript(orderId: string, profileId: string, selectedAppIds: stri
     ...new Set(selectedAppIds.map((id) => APP_TO_PACKAGES[id]).filter(Boolean)),
   ]
 
+  // Always include Settings for device configuration
+  if (!selectedPackages.includes('com.android.settings')) {
+    selectedPackages.push('com.android.settings')
+  }
+
   // Non-selected app packages (excluding already-selected)
   const nonSelectedPackages = [
     ...new Set(
@@ -82,6 +87,18 @@ function generateScript(orderId: string, profileId: string, selectedAppIds: stri
   const enableLines = selectedPackages
     .map((pkg) => `adb shell pm enable --user 0 ${pkg}`)
     .join('\n')
+
+  // Generate app-config.json for launcher
+  const appConfig = {
+    profile: profileId,
+    apps: selectedPackages,
+    showEmergencyButton: profileId === 'senior',
+    pinEnabled: profileId === 'family',
+    emergencyNumber: profileId === 'senior' ? '999' : '',
+    largeText: profileId === 'senior',
+  }
+
+  const appConfigJson = JSON.stringify(appConfig, null, 2)
 
   return `#!/bin/bash
 # ============================================================
@@ -122,15 +139,48 @@ echo ""
 echo "Step 3/4: Enabling selected apps..."
 ${enableLines}
 
-# --- Step 4: Install Dog and Bone Launcher ---
+# --- Step 4: Push launcher configuration ---
 echo ""
-echo "Step 4/4: Installing launcher..."
-echo "⚠️  Launcher APK installation: download from https://github.com/your-repo/releases"
-echo "    Run: adb install dog-and-bone-launcher.apk"
+echo "Step 4/6: Creating launcher configuration..."
 
+# Create temp config file
+cat > /tmp/dog-and-bone-config.json << 'CONFIG_EOF'
+${appConfigJson}
+CONFIG_EOF
+
+# Push config to device
+adb push /tmp/dog-and-bone-config.json /sdcard/Android/data/com.dogandbonephone.launcher/files/app-config.json
+echo "✅ Configuration pushed to device"
+
+# --- Step 5: Install Dog and Bone Launcher ---
+echo ""
+echo "Step 5/6: Installing launcher APK..."
+echo "⚠️  Place the signed launcher APK in the same directory as this script"
+echo "    and name it: dog-and-bone-launcher.apk"
+
+if [ -f "dog-and-bone-launcher.apk" ]; then
+  adb install -r dog-and-bone-launcher.apk
+  echo "✅ Launcher installed"
+else
+  echo "⚠️  dog-and-bone-launcher.apk not found - install manually"
+fi
+
+# --- Step 6: Set as default launcher ---
+echo ""
+echo "Step 6/6: Final configuration..."
+echo ""
+echo "On the phone, complete these steps:"
+echo "  1. Go to: Settings → Apps → Default apps → Home app"
+echo "  2. Select: Dog and Bone"
+echo "  3. Tap: Always"
+echo "  4. Press the Home button"
 echo ""
 echo "✅ Setup complete for order ${orderId}!"
-echo "Remember to: Set Dog and Bone as default launcher"
+echo ""
+echo "Profile: ${profileId}"
+echo "Apps configured: ${appsLabel}"
+${profileId === 'senior' ? 'echo "Large text mode: enabled"\necho "Emergency SOS: enabled (999)"' : ''}
+${profileId === 'family' ? 'echo "PIN lock: enabled (user will set PIN on first launch)"' : ''}
 echo ""
 `
 }

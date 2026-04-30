@@ -18,6 +18,7 @@ data class AppConfig(
     val showEmergencyButton: Boolean,
     val pinEnabled: Boolean,
     val emergencyNumber: String,
+    val largeText: Boolean = false,
 ) {
     companion object {
 
@@ -61,6 +62,7 @@ data class AppConfig(
                 showEmergencyButton = obj.optBoolean("showEmergencyButton", false),
                 pinEnabled = obj.optBoolean("pinEnabled", false),
                 emergencyNumber = obj.optString("emergencyNumber", ""),
+                largeText = obj.optBoolean("largeText", false),
             )
         }
     }

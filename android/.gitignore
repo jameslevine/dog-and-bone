@@ -1,0 +1,11 @@
+
+# Keystore files (NEVER commit these!)
+*.keystore
+*.keystore.gpg
+keystore.properties
+
+# Build outputs
+build-output/
+launcher/app/build/
+launcher/.gradle/
+launcher/local.properties

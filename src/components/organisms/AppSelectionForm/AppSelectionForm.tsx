@@ -89,20 +89,18 @@ export function AppSelectionForm({ profileId, onSubmit }: AppSelectionFormProps)
                     {apps.map((app) => (
                       <div
                         key={app.id}
-                        className={`p-4 rounded-2xl border-2 transition-all duration-150 cursor-pointer
+                        className={`p-4 rounded-2xl border-2 transition-all duration-150
                           ${
                             selectedAppIds.includes(app.id)
                               ? 'border-[#FFB703] bg-[#FFF8E7]'
                               : 'border-[#F5EDD8] bg-white hover:border-[#FFB703]/50'
                           }`}
-                        onClick={() => toggleApp(app.id)}
                       >
                         <Checkbox
                           label={app.name}
                           description={app.description}
                           checked={selectedAppIds.includes(app.id)}
                           onChange={() => toggleApp(app.id)}
-                          onClick={(e) => e.stopPropagation()}
                           id={`app-${app.id}`}
                         />
                       </div>

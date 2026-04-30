@@ -113,29 +113,24 @@ fi
 echo "✅ zipalign: $(basename "$(dirname "$ZIPALIGN")")"
 echo ""
 
-# Step 1: Sign the APK
-echo "🔑 Step 1: Signing APK with jarsigner..."
-jarsigner -verbose \
-  -sigalg SHA256withRSA \
-  -digestalg SHA-256 \
-  -keystore "$KEYSTORE_PATH" \
-  -storepass "$STORE_PASS" \
-  -keypass "$KEY_PASS" \
-  "$UNSIGNED_APK" \
-  "$KEY_ALIAS"
-
-if [ $? -ne 0 ]; then
-    echo "❌ Signing failed!"
-    exit 1
+# Find apksigner
+APKSIGNER="$ANDROID_HOME/build-tools/34.0.0/apksigner"
+if [ ! -f "$APKSIGNER" ]; then
+    # Try to find any apksigner version
+    APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" -type f | head -n 1)
+    if [ -z "$APKSIGNER" ]; then
+        echo "❌ apksigner not found in $ANDROID_HOME/build-tools"
+        echo "   Install Android SDK build-tools"
+        exit 1
+    fi
 fi
 
-echo ""
-echo "✅ APK signed successfully"
+echo "✅ apksigner: $(basename "$(dirname "$APKSIGNER")")"
 echo ""
 
-# Step 2: Align the APK
-echo "📦 Step 2: Optimizing APK with zipalign..."
-"$ZIPALIGN" -v -f 4 "$UNSIGNED_APK" "$SIGNED_APK"
+# Step 1: Align the APK first (required before signing with apksigner)
+echo "📦 Step 1: Aligning APK with zipalign..."
+"$ZIPALIGN" -v -f 4 "$UNSIGNED_APK" "$ALIGNED_APK"
 
 if [ $? -ne 0 ]; then
     echo "❌ Alignment failed!"
@@ -146,27 +141,34 @@ echo ""
 echo "✅ APK aligned successfully"
 echo ""
 
+# Step 2: Sign the aligned APK with apksigner (V1, V2, and V3 signatures)
+echo "🔑 Step 2: Signing APK with apksigner (V2/V3 scheme)..."
+"$APKSIGNER" sign \
+  --ks "$KEYSTORE_PATH" \
+  --ks-key-alias "$KEY_ALIAS" \
+  --ks-pass "pass:$STORE_PASS" \
+  --key-pass "pass:$KEY_PASS" \
+  --out "$SIGNED_APK" \
+  "$ALIGNED_APK"
+
+if [ $? -ne 0 ]; then
+    echo "❌ Signing failed!"
+    exit 1
+fi
+
+echo ""
+echo "✅ APK signed successfully with V1, V2, and V3 signatures"
+echo ""
+
 # Step 3: Verify signature
 echo "🔍 Step 3: Verifying signature..."
-jarsigner -verify -verbose -certs "$SIGNED_APK" > /dev/null
+"$APKSIGNER" verify --verbose "$SIGNED_APK"
 
 if [ $? -eq 0 ]; then
     echo "✅ Signature verified!"
 else
     echo "❌ Signature verification failed!"
     exit 1
-fi
-
-echo ""
-
-# Step 4: Verify alignment
-echo "🔍 Step 4: Verifying alignment..."
-"$ZIPALIGN" -c -v 4 "$SIGNED_APK" > /dev/null
-
-if [ $? -eq 0 ]; then
-    echo "✅ Alignment verified!"
-else
-    echo "⚠️  Alignment verification failed (non-critical)"
 fi
 
 echo ""
