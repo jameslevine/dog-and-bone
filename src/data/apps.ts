@@ -145,6 +145,15 @@ export const APPS: AppItem[] = [
     defaultInProfiles: ['balance', 'senior'],
     available: true,
   },
+  {
+    id: 'settings',
+    name: 'Settings',
+    description: 'Wi-Fi, display, and device settings (PIN protected for Family)',
+    category: 'productivity',
+    packageName: 'com.android.settings',
+    defaultInProfiles: ['family'],
+    available: true,
+  },
 
   // Browser
   {

@@ -74,11 +74,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyLargeTextMode() {
-        // Increase system font scale for this activity
+        // Increase system font scale for this activity (app labels)
         val configuration = resources.configuration
-        configuration.fontScale = 1.3f  // 30% larger text
+        configuration.fontScale = 1.5f  // 1.5x larger text for senior profile
         @Suppress("DEPRECATION")
         resources.updateConfiguration(configuration, resources.displayMetrics)
+
+        // Also increase clock and date text size
+        binding.clock.textSize = 52f * 1.5f  // Time: 78sp
+        binding.date.textSize = 16f * 1.5f   // Date: 24sp
     }
 
     override fun onResume() {

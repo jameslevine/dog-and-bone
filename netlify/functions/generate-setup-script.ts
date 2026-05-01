@@ -50,6 +50,7 @@ const APP_TO_PACKAGES: Record<string, string> = {
   notes: 'com.samsung.android.app.notes',
   weather: 'com.samsung.android.weather',
   browser: 'com.sec.android.app.sbrowser',
+  settings: 'com.android.settings',
 }
 
 // Apps that are NOT pre-installed and need APK files

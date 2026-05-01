@@ -31,7 +31,7 @@ export const PROFILES: Profile[] = [
     price: 14900,
     stripePriceId: 'price_1TRUuVADn0IQxQyav33EukwO',
     targetMarket: 'Parents & children',
-    includedAppIds: ['phone', 'sms', 'camera', 'gallery', 'gmaps'],
+    includedAppIds: ['phone', 'sms', 'camera', 'gallery', 'gmaps', 'settings'],
     features: [
       'Everything in Essential',
       'Parental PIN lock',
