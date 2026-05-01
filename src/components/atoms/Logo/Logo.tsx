@@ -63,41 +63,47 @@ function DogBoneIcon({ size, showBg = true, brown = '#2C1503' }: DogBoneIconProp
       {/* Background circle */}
       {showBg && <circle cx="50" cy="50" r="48" fill="#FFB703" />}
 
-      {/* Dog face base */}
-      <ellipse cx="50" cy="55" rx="28" ry="32" fill="white" />
+      {/* Dog head (rounded rectangle, more vertical) */}
+      <rect x="30" y="35" width="40" height="45" rx="20" fill="white" />
 
-      {/* Left ear (brown) */}
-      <ellipse cx="28" cy="25" rx="12" ry="18" fill={brown} />
+      {/* Left ear (brown, floppy) */}
+      <ellipse cx="32" cy="30" rx="10" ry="22" fill={brown} transform="rotate(-15 32 30)" />
 
-      {/* Right ear (orange patch) */}
-      <ellipse cx="72" cy="25" rx="12" ry="18" fill="#FF8C42" />
+      {/* Right ear (orange patch, floppy) */}
+      <ellipse cx="68" cy="30" rx="10" ry="22" fill="#FF8C42" transform="rotate(15 68 30)" />
+
+      {/* Snout area (lighter oval) */}
+      <ellipse cx="50" cy="60" rx="16" ry="14" fill="#F5F5F5" />
 
       {/* Left eye */}
-      <ellipse cx="38" cy="48" rx="4" ry="6" fill={brown} />
+      <circle cx="40" cy="48" r="3.5" fill={brown} />
 
       {/* Right eye */}
-      <ellipse cx="62" cy="48" rx="4" ry="6" fill={brown} />
+      <circle cx="60" cy="48" r="3.5" fill={brown} />
 
-      {/* Nose */}
-      <ellipse cx="50" cy="62" rx="6" ry="5" fill={brown} />
+      {/* Nose (bigger, more prominent) */}
+      <ellipse cx="50" cy="63" rx="5" ry="4" fill={brown} />
 
-      {/* Mouth */}
+      {/* Mouth line from nose */}
+      <line x1="50" y1="67" x2="50" y2="72" stroke={brown} strokeWidth="2" strokeLinecap="round" />
+
+      {/* Smile */}
       <path
-        d="M50 62 Q40 70 35 68 M50 62 Q60 70 65 68"
+        d="M44 72 Q50 76 56 72"
         stroke={brown}
-        strokeWidth="2.5"
+        strokeWidth="2"
         strokeLinecap="round"
         fill="none"
       />
 
-      {/* Tongue (small) */}
-      <ellipse cx="50" cy="72" rx="3" ry="4" fill="#E63946" />
+      {/* Tongue (peeking out) */}
+      <ellipse cx="50" cy="75" rx="4" ry="3" fill="#E63946" />
 
-      {/* Bone at bottom */}
-      <g transform="translate(50, 88)">
-        <circle cx="-12" cy="0" r="4" fill={brown} />
-        <circle cx="12" cy="0" r="4" fill={brown} />
-        <rect x="-10" y="-2" width="20" height="4" rx="2" fill={brown} />
+      {/* Small bone at bottom */}
+      <g transform="translate(50, 90)">
+        <circle cx="-8" cy="0" r="3" fill={brown} />
+        <circle cx="8" cy="0" r="3" fill={brown} />
+        <rect x="-7" y="-1.5" width="14" height="3" rx="1.5" fill={brown} />
       </g>
     </svg>
   )
