@@ -2,15 +2,24 @@ import { create } from 'zustand'
 import { type ProfileId } from '@/types'
 import { PROFILES } from '@/data/profiles'
 
+export interface Contact {
+  name: string
+  phone: string
+}
+
 interface CustomizationState {
   profileId: ProfileId | null
   selectedAppIds: string[]
   customAppsRequest: string
+  seniorContacts: Contact[]
+  familyEmergencyContact: Contact | null
 
   setProfile: (profileId: ProfileId) => void
   toggleApp: (appId: string) => void
   setSelectedApps: (appIds: string[]) => void
   setCustomAppsRequest: (text: string) => void
+  setSeniorContacts: (contacts: Contact[]) => void
+  setFamilyEmergencyContact: (contact: Contact | null) => void
   reset: () => void
 
   /** Serialise selected apps to comma-separated string for Stripe metadata */
@@ -21,6 +30,8 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
   profileId: null,
   selectedAppIds: [],
   customAppsRequest: '',
+  seniorContacts: [],
+  familyEmergencyContact: null,
 
   setProfile: (profileId) => {
     const profile = PROFILES.find((p) => p.id === profileId)
@@ -45,11 +56,17 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
 
   setCustomAppsRequest: (text) => set({ customAppsRequest: text }),
 
+  setSeniorContacts: (contacts) => set({ seniorContacts: contacts }),
+
+  setFamilyEmergencyContact: (contact) => set({ familyEmergencyContact: contact }),
+
   reset: () =>
     set({
       profileId: null,
       selectedAppIds: [],
       customAppsRequest: '',
+      seniorContacts: [],
+      familyEmergencyContact: null,
     }),
 
   serialiseApps: () => get().selectedAppIds.join(','),
