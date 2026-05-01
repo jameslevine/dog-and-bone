@@ -20,8 +20,7 @@ dist-ssr
 .env.local
 .env.production
 
-# Generated assets (large video files)
-public/videos/*.mp4
+# Note: Videos are included in Git (6MB total) for Netlify deployment
 
 # Android build outputs
 android/launcher/app/build/
