@@ -40,3 +40,4 @@ android/launcher/local.properties
 
 # Local Netlify folder
 .netlify
+context/
