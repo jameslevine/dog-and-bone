@@ -61,43 +61,44 @@ function DogBoneIcon({ size, showBg = true, brown = '#2C1503' }: DogBoneIconProp
       aria-hidden="true"
     >
       {/* Background circle */}
-      {showBg && <circle cx="50" cy="50" r="50" fill="#FFB703" />}
+      {showBg && <circle cx="50" cy="50" r="48" fill="#FFB703" />}
 
-      {/* Bone body — vertical rectangle with rounded knobs */}
-      {/* Top-left knob */}
-      <circle cx="35" cy="25" r="11" fill={brown} />
-      <circle cx="35" cy="25" r="7.5" fill="white" />
+      {/* Dog face base */}
+      <ellipse cx="50" cy="55" rx="28" ry="32" fill="white" />
 
-      {/* Top-right knob */}
-      <circle cx="65" cy="25" r="11" fill={brown} />
-      <circle cx="65" cy="25" r="7.5" fill="white" />
+      {/* Left ear (brown) */}
+      <ellipse cx="28" cy="25" rx="12" ry="18" fill={brown} />
 
-      {/* Bottom-left knob */}
-      <circle cx="35" cy="75" r="11" fill={brown} />
-      <circle cx="35" cy="75" r="7.5" fill="white" />
+      {/* Right ear (orange patch) */}
+      <ellipse cx="72" cy="25" rx="12" ry="18" fill="#FF8C42" />
 
-      {/* Bottom-right knob */}
-      <circle cx="65" cy="75" r="11" fill={brown} />
-      <circle cx="65" cy="75" r="7.5" fill="white" />
+      {/* Left eye */}
+      <ellipse cx="38" cy="48" rx="4" ry="6" fill={brown} />
 
-      {/* Bone shaft */}
-      <rect x="28" y="22" width="44" height="56" rx="6" fill={brown} />
-      <rect x="31" y="25" width="38" height="50" rx="4" fill="white" />
+      {/* Right eye */}
+      <ellipse cx="62" cy="48" rx="4" ry="6" fill={brown} />
 
-      {/* Dog eyes — dark dots */}
-      <circle cx="41" cy="40" r="4" fill={brown} />
-      <circle cx="59" cy="40" r="4" fill={brown} />
+      {/* Nose */}
+      <ellipse cx="50" cy="62" rx="6" ry="5" fill={brown} />
 
-      {/* Cheek blush marks */}
-      <ellipse cx="33" cy="50" rx="5" ry="3" fill="#FFB703" opacity="0.6" />
-      <ellipse cx="67" cy="50" rx="5" ry="3" fill="#FFB703" opacity="0.6" />
+      {/* Mouth */}
+      <path
+        d="M50 62 Q40 70 35 68 M50 62 Q60 70 65 68"
+        stroke={brown}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+      />
 
-      {/* Heart nose */}
-      <path d="M47 52 Q47 48.5 50 50 Q53 48.5 53 52 Q53 55.5 50 58 Q47 55.5 47 52 Z" fill={brown} />
+      {/* Tongue (small) */}
+      <ellipse cx="50" cy="72" rx="3" ry="4" fill="#E63946" />
 
-      {/* Tongue */}
-      <ellipse cx="50" cy="62" rx="5" ry="5" fill="#E63946" />
-      <rect x="45" y="58" width="10" height="5" fill="#E63946" />
+      {/* Bone at bottom */}
+      <g transform="translate(50, 88)">
+        <circle cx="-12" cy="0" r="4" fill={brown} />
+        <circle cx="12" cy="0" r="4" fill={brown} />
+        <rect x="-10" y="-2" width="20" height="4" rx="2" fill={brown} />
+      </g>
     </svg>
   )
 }
