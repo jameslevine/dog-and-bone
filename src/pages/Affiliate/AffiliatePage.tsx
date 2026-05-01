@@ -218,7 +218,7 @@ export function AffiliatePage() {
               <div>
                 <p className="text-[#FFF8E7] text-2xl font-extrabold mb-2">Real-time dashboard</p>
                 <p className="text-[#C9A97A] leading-relaxed">
-                  Track clicks, conversions, and earnings in real time through your Rewardful
+                  Track clicks, conversions, and earnings in real time through your Endorsely
                   dashboard. No spreadsheets. No chasing invoices.
                 </p>
               </div>
