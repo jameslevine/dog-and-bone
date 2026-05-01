@@ -80,7 +80,6 @@
     "lint-staged": "^16.4.0",
     "msw": "^2.13.0",
     "prettier": "^3.8.1",
-    "puppeteer": "^24.42.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "~6.0.2",

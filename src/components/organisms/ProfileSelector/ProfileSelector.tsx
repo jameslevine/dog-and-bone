@@ -43,27 +43,12 @@ export function ProfileSelector() {
               </div>
             )}
 
-            {/* Launcher screenshot preview */}
-            <div className="mb-6 rounded-2xl overflow-hidden border-2 border-[#2C1503] bg-[#FFF8E7] h-64">
-              <img
-                src={`/images/screenshots/launcher-${profile.id}.png`}
-                alt={`${profile.name} launcher preview`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Fallback to color block if screenshot doesn't exist yet
-                  e.currentTarget.style.display = 'none'
-                  if (e.currentTarget.nextElementSibling) {
-                    ;(e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex'
-                  }
-                }}
-              />
-              <div
-                className="w-full h-full flex items-center justify-center"
-                style={{ backgroundColor: profile.color, display: 'none' }}
-              >
-                <span className="text-6xl">📱</span>
-              </div>
-            </div>
+            {/* Profile colour accent */}
+            <div
+              className="w-10 h-10 rounded-xl mb-4 border-2 border-[#2C1503]"
+              style={{ backgroundColor: profile.color }}
+              aria-hidden="true"
+            />
 
             <h3 className="text-xl font-extrabold text-[#2C1503] mb-1">{profile.name}</h3>
             <p className="text-sm font-semibold text-[#5A4A3A] mb-4">{profile.tagline}</p>
