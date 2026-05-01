@@ -36,12 +36,6 @@ export function HeroSection() {
           <Link to="/store">
             <Button size="lg">Shop Now</Button>
           </Link>
-
-          <Link to="/send-your-phone">
-            <Button variant="secondary" size="lg">
-              Send Your Phone
-            </Button>
-          </Link>
         </div>
       </div>
     </section>

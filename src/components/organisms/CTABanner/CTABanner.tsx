@@ -5,7 +5,7 @@ export function CTABanner() {
   return (
     <section className="bg-[#2C1503] py-20" aria-labelledby="cta-banner-heading">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center flex flex-col items-center gap-6">
-        <Logo variant="compact" size="md" />
+        <Logo variant="white" size="lg" />
 
         <h2
           id="cta-banner-heading"
