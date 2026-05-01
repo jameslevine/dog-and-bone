@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dog and Bone brand palette -->
+    <color name="brand_yellow">#FFB703</color>
+    <color name="brand_brown">#2C1503</color>
+    <color name="brand_cream">#FFF8E7</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- Semantic aliases -->
+    <color name="colorPrimary">@color/brand_brown</color>
+    <color name="colorPrimaryVariant">@color/brand_brown</color>
+    <color name="colorOnPrimary">@color/brand_cream</color>
+    <color name="colorSecondary">@color/brand_yellow</color>
+    <color name="colorOnSecondary">@color/brand_brown</color>
+    <color name="colorBackground">@color/brand_cream</color>
+    <color name="colorSurface">@color/white</color>
+
+    <!-- Emergency button -->
+    <color name="emergency_red">#D32F2F</color>
+    <color name="emergency_red_pressed">#B71C1C</color>
+
+    <!-- App grid -->
+    <color name="app_label_text">@color/brand_brown</color>
+    <color name="clock_text">@color/brand_brown</color>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme -->
+    <style name="Theme.DogAndBoneLauncher" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/brand_brown</item>
+        <item name="colorPrimaryVariant">@color/brand_brown</item>
+        <item name="colorOnPrimary">@color/brand_cream</item>
+        <item name="colorSecondary">@color/brand_yellow</item>
+        <item name="colorSecondaryVariant">@color/brand_yellow</item>
+        <item name="colorOnSecondary">@color/brand_brown</item>
+        <item name="android:colorBackground">@color/brand_cream</item>
+        <item name="android:windowBackground">@color/brand_cream</item>
+        <item name="android:statusBarColor">@color/brand_brown</item>
+        <item name="android:navigationBarColor">@color/brand_brown</item>
+        <!-- Use light icons on the dark status bar -->
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- PIN lock screen — same base, slightly different background -->
+    <style name="Theme.DogAndBoneLauncher.PinLock">
+        <item name="android:windowBackground">@color/brand_cream</item>
+    </style>
+
+    <!-- Emergency call confirmation screen — red accent -->
+    <style name="Theme.DogAndBoneLauncher.Emergency">
+        <item name="android:windowBackground">@color/brand_cream</item>
+        <item name="colorPrimary">@color/emergency_red</item>
+    </style>
+
+</resources>

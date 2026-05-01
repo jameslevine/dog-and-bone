@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_cream"
+    android:padding="32dp">
+
+    <TextView
+        android:id="@+id/pinTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/pin_verify_title"
+        android:textSize="24sp"
+        android:textColor="@color/brand_brown"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/pinInput"
+        app:layout_constraintVertical_chainStyle="packed"
+        android:layout_marginBottom="24dp" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/pinInput"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/pin_input_hint"
+        android:inputType="numberPassword"
+        android:gravity="center"
+        android:textSize="32sp"
+        android:letterSpacing="0.5"
+        app:layout_constraintTop_toBottomOf="@id/pinTitle"
+        app:layout_constraintBottom_toTopOf="@id/pinConfirmButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="24dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/pinConfirmButton"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:text="@string/pin_confirm_button"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/pinInput"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=390, initial-scale=1.0" />
+  <title>Dog and Bone Launcher Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    /* Phone shell */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: #FFF8E7;
+      border-radius: 52px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 0 0 2px #2C1503;
+    }
+
+    /* Status bar */
+    .status-bar {
+      background: #2C1503;
+      color: #FFF8E7;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .status-bar .time { font-size: 15px; font-weight: 800; }
+    .status-icons { display: flex; gap: 6px; align-items: center; }
+    .signal, .wifi, .battery {
+      background: #FFF8E7;
+      border-radius: 2px;
+    }
+    .signal { width: 16px; height: 12px; }
+    .wifi { width: 14px; height: 11px; border-radius: 50% 50% 0 0; }
+    .battery { width: 20px; height: 11px; border-radius: 3px; }
+
+    /* Clock block */
+    .clock-block {
+      background: #FFB703;
+      padding: 32px 28px 24px;
+      text-align: center;
+    }
+    .clock-time {
+      font-size: 64px;
+      font-weight: 800;
+      color: #2C1503;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+    .clock-date {
+      font-size: 15px;
+      font-weight: 600;
+      color: #2C1503;
+      margin-top: 6px;
+      opacity: 0.8;
+    }
+
+    /* App grid */
+    .app-grid-label {
+      padding: 20px 24px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #5A4A3A;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      padding: 0 16px;
+    }
+
+    .app-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 4px 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .app-item:active { background: rgba(44,21,3,0.08); }
+
+    .app-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    .app-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #2C1503;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* Home bar */
+    .home-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px;
+      height: 5px;
+      background: #2C1503;
+      border-radius: 3px;
+      opacity: 0.3;
+    }
+
+    /* Variants */
+    /* Essential profile */
+    .essential { background: #FFF8E7; }
+
+    /* Family profile — slight red tint header */
+    .family .clock-block { background: #E63946; }
+    .family .clock-time { color: #fff; }
+    .family .clock-date { color: rgba(255,255,255,0.85); }
+
+    /* Senior profile — larger text */
+    .senior .clock-time { font-size: 72px; }
+    .senior .app-icon { width: 64px; height: 64px; font-size: 30px; }
+    .senior .app-name { font-size: 12px; }
+    .senior .app-grid { grid-template-columns: repeat(3, 1fr); }
+  </style>
+</head>
+<body>
+
+<!-- ===================== ESSENTIAL PROFILE ===================== -->
+<div class="phone essential" id="essential">
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <div class="status-icons">
+      <div class="signal"></div>
+      <div class="wifi"></div>
+      <div class="battery"></div>
+    </div>
+  </div>
+
+  <div class="clock-block">
+    <div class="clock-time">9:41</div>
+    <div class="clock-date">Tuesday, 8 April</div>
+  </div>
+
+  <div class="app-grid-label">My Apps</div>
+
+  <div class="app-grid">
+    <div class="app-item">
+      <div class="app-icon" style="background:#34C759;">📞</div>
+      <div class="app-name">Phone</div>
+    </div>
+    <div class="app-item">
+      <div class="app-icon" style="background:#30B0C7;">💬</div>
+      <div class="app-name">Messages</div>
+    </div>
+    <div class="app-item">
+      <div class="app-icon" style="background:#1C1C1E;">📷</div>
+      <div class="app-name">Camera</div>
+    </div>
+    <div class="app-item">
+      <div class="app-icon" style="background:#4285F4;">🗺️</div>
+      <div class="app-name">Maps</div>
+    </div>
+    <div class="app-item">
+      <div class="app-icon" style="background:#FF9500;">🧮</div>
+      <div class="app-name">Calculator</div>
+    </div>
+    <div class="app-item">
+      <div class="app-icon" style="background:#FF3B30;">⏰</div>
+      <div class="app-name">Alarm</div>
+    </div>
+    <div class="app-item">
+      <div class="app-icon" style="background:#5856D6;">🕐</div>
+      <div class="app-name">Clock</div>
+    </div>
+    <div class="app-item">
+      <div class="app-icon" style="background:#2C1503;">⚙️</div>
+      <div class="app-name">Settings</div>
+    </div>
+  </div>
+
+  <div class="home-bar"></div>
+</div>
+
+<script>
+  // Switch between profiles by changing the class on .phone
+  // 'essential', 'family', 'senior'
+
+  // Update clock to real time
+  function updateClock() {
+    const now = new Date()
+    const h = now.getHours().toString().padStart(2,'0')
+    const m = now.getMinutes().toString().padStart(2,'0')
+    const timeStr = `${h}:${m}`
+    document.querySelectorAll('.clock-time, .status-bar .time').forEach(el => el.textContent = timeStr)
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+    document.querySelector('.clock-date').textContent =
+      `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`
+  }
+  updateClock()
+  setInterval(updateClock, 30000)
+</script>
+</body>
+</html>

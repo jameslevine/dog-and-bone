@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_cream"
+    tools:context=".MainActivity">
+
+    <!-- ===== Top: clock and date ===== -->
+    <LinearLayout
+        android:id="@+id/clockContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="32dp"
+        android:paddingBottom="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Live clock — updates automatically, no handler needed -->
+        <TextClock
+            android:id="@+id/clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="h:mm a"
+            android:format24Hour="HH:mm"
+            android:textSize="52sp"
+            android:textColor="@color/brand_brown"
+            android:fontFamily="sans-serif-light"
+            android:includeFontPadding="false" />
+
+        <!-- Date -->
+        <TextClock
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="EEEE, d MMMM"
+            android:format24Hour="EEEE, d MMMM"
+            android:textSize="16sp"
+            android:textColor="@color/brand_brown"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+    <!-- ===== Centre: app grid ===== -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/appGrid"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="16dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/clockContainer"
+        app:layout_constraintBottom_toTopOf="@id/emergencyButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_app" />
+
+    <!-- ===== Bottom: emergency SOS button (Senior profile only) ===== -->
+    <!--
+        Visibility is set programmatically in MainActivity based on AppConfig.
+        Default: GONE. Set to VISIBLE for showEmergencyButton=true.
+    -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/emergencyButton"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        android:text="@string/emergency_button_label"
+        android:textSize="22sp"
+        android:textColor="@color/white"
+        android:contentDescription="@string/emergency_button_description"
+        android:backgroundTint="@color/emergency_red"
+        android:visibility="gone"
+        app:cornerRadius="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

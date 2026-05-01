@@ -1,0 +1,12 @@
+# Dog and Bone — Essential Profile: enabled app package names
+# Calls, SMS, Camera, Gallery, Maps, Calculator, Clock/Alarm, Contacts, Settings
+
+com.samsung.android.dialer
+com.samsung.android.messaging
+com.sec.android.app.camera
+com.sec.android.gallery3d
+com.google.android.apps.maps
+com.sec.android.app.popupcalculator
+com.sec.android.app.clockpackage
+com.android.contacts
+com.android.settings

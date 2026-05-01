@@ -1,0 +1,17 @@
+# Dog and Bone — Senior Profile: enabled app package names
+# Core apps + WhatsApp for family video calls + Weather.
+# Emergency SOS button enabled (showEmergencyButton: true in app-config.json).
+# Large text (font_scale: 1.3) applied during setup.
+
+com.samsung.android.dialer
+com.samsung.android.messaging
+com.sec.android.app.camera
+com.sec.android.gallery3d
+com.google.android.apps.maps
+com.sec.android.app.popupcalculator
+com.sec.android.app.clockpackage
+com.android.contacts
+com.android.settings
+com.whatsapp
+com.google.android.apps.meetings
+com.samsung.android.weather

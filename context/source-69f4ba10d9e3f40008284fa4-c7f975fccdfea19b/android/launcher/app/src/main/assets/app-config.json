@@ -1,0 +1,18 @@
+{
+  "profile": "essential",
+  "apps": [
+    "com.samsung.android.dialer",
+    "com.samsung.android.messaging",
+    "com.sec.android.app.camera",
+    "com.google.android.apps.maps",
+    "com.sec.android.app.popupcalculator",
+    "com.sec.android.app.clockpackage",
+    "com.whatsapp",
+    "com.google.android.gm",
+    "com.android.contacts"
+  ],
+  "showEmergencyButton": false,
+  "pinEnabled": false,
+  "emergencyNumber": "",
+  "largeText": false
+}
