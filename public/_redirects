@@ -1,0 +1,5 @@
+# Netlify redirects - serve static files, fallback to SPA
+# Files that exist are served directly
+# Non-existent routes go to index.html for React Router
+
+/*  /index.html  200
