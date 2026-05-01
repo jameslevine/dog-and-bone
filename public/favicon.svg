@@ -1,41 +1,44 @@
 <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background circle -->
+  <!-- Background -->
   <circle cx="50" cy="50" r="48" fill="#FFB703"/>
 
-  <!-- Dog head (rounded rectangle, more vertical) -->
-  <rect x="30" y="35" width="40" height="45" rx="20" fill="white"/>
+  <!-- Left ear (floppy, hanging down) -->
+  <path d="M25 35 C20 35 18 45 20 55 C22 60 28 62 32 58 C35 54 32 40 28 35 C27 34 26 34 25 35 Z" fill="#2C1503" stroke="#2C1503" stroke-width="3"/>
+  <path d="M25 38 C23 38 22 45 23 52 C24 56 27 58 29 55 C31 52 29 42 27 38 C26 37 26 37 25 38 Z" fill="white"/>
 
-  <!-- Left ear (brown, floppy) -->
-  <ellipse cx="32" cy="30" rx="10" ry="22" fill="#2C1503" transform="rotate(-15 32 30)"/>
+  <!-- Right ear (floppy, hanging down) -->
+  <path d="M75 35 C80 35 82 45 80 55 C78 60 72 62 68 58 C65 54 68 40 72 35 C73 34 74 34 75 35 Z" fill="#2C1503" stroke="#2C1503" stroke-width="3"/>
+  <path d="M75 38 C77 38 78 45 77 52 C76 56 73 58 71 55 C69 52 71 42 73 38 C74 37 74 37 75 38 Z" fill="#FF8C42"/>
 
-  <!-- Right ear (orange patch, floppy) -->
-  <ellipse cx="68" cy="30" rx="10" ry="22" fill="#FF8C42" transform="rotate(15 68 30)"/>
+  <!-- Dog head outline -->
+  <rect x="28" y="32" width="44" height="40" rx="18" fill="white" stroke="#2C1503" stroke-width="4"/>
 
-  <!-- Snout area (lighter oval) -->
-  <ellipse cx="50" cy="60" rx="16" ry="14" fill="#F5F5F5"/>
+  <!-- Orange patch on right side -->
+  <path d="M50 32 L72 32 C72 32 78 38 78 50 C78 62 72 72 72 72 L50 72 Z" fill="#FF8C42"/>
 
   <!-- Left eye -->
-  <circle cx="40" cy="48" r="3.5" fill="#2C1503"/>
+  <ellipse cx="38" cy="45" rx="3" ry="5" fill="#2C1503"/>
 
   <!-- Right eye -->
-  <circle cx="60" cy="48" r="3.5" fill="#2C1503"/>
+  <ellipse cx="62" cy="45" rx="3" ry="5" fill="#2C1503"/>
 
-  <!-- Nose (bigger, more prominent) -->
-  <ellipse cx="50" cy="63" rx="5" ry="4" fill="#2C1503"/>
+  <!-- Big nose -->
+  <ellipse cx="50" cy="58" rx="7" ry="6" fill="#2C1503"/>
 
-  <!-- Mouth line from nose -->
-  <line x1="50" y1="67" x2="50" y2="72" stroke="#2C1503" stroke-width="2" stroke-linecap="round"/>
+  <!-- Mouth line down from nose -->
+  <line x1="50" y1="64" x2="50" y2="68" stroke="#2C1503" stroke-width="3" stroke-linecap="round"/>
 
-  <!-- Smile -->
-  <path d="M44 72 Q50 76 56 72" stroke="#2C1503" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Smile curves -->
+  <path d="M50 68 Q42 72 38 70" stroke="#2C1503" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M50 68 Q58 72 62 70" stroke="#2C1503" stroke-width="3" stroke-linecap="round" fill="none"/>
 
-  <!-- Tongue (peeking out) -->
-  <ellipse cx="50" cy="75" rx="4" ry="3" fill="#E63946"/>
-
-  <!-- Small bone at bottom -->
-  <g transform="translate(50, 90)">
-    <circle cx="-8" cy="0" r="3" fill="#2C1503"/>
-    <circle cx="8" cy="0" r="3" fill="#2C1503"/>
-    <rect x="-7" y="-1.5" width="14" height="3" rx="1.5" fill="#2C1503"/>
+  <!-- Bone at bottom -->
+  <g transform="translate(50, 85)">
+    <ellipse cx="-15" cy="0" rx="5" ry="6" fill="#2C1503"/>
+    <ellipse cx="-15" cy="0" rx="3" ry="4" fill="white"/>
+    <ellipse cx="15" cy="0" rx="5" ry="6" fill="#2C1503"/>
+    <ellipse cx="15" cy="0" rx="3" ry="4" fill="white"/>
+    <rect x="-12" y="-3" width="24" height="6" rx="3" fill="#2C1503"/>
+    <rect x="-10" y="-2" width="20" height="4" rx="2" fill="white"/>
   </g>
 </svg>
