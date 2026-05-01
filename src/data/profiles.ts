@@ -10,6 +10,7 @@ export const PROFILES: Profile[] = [
     price: 14900, // pence
     stripePriceId: 'price_1TRUt1ADn0IQxQyaWuWxzFvk',
     targetMarket: 'Digital detox',
+    popular: true,
     includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
     features: [
       'Phone calls & SMS',
@@ -30,7 +31,6 @@ export const PROFILES: Profile[] = [
     price: 14900,
     stripePriceId: 'price_1TRUuVADn0IQxQyav33EukwO',
     targetMarket: 'Parents & children',
-    popular: true,
     includedAppIds: ['phone', 'sms', 'camera', 'gmaps', 'calculator', 'alarm', 'clock'],
     features: [
       'Everything in Essential',
