@@ -25,6 +25,8 @@ interface CheckoutBody {
   successUrl: string
   cancelUrl: string
   referralId: string | null
+  seniorContacts?: { name: string; phone: string }[]
+  familyEmergencyContact?: { name: string; phone: string } | null
 }
 
 async function createCheckoutSession(body: CheckoutBody): Promise<CheckoutSessionResponse> {
@@ -45,7 +47,8 @@ async function createCheckoutSession(body: CheckoutBody): Promise<CheckoutSessio
 export function CheckoutPage() {
   const navigate = useNavigate()
   const { profileId } = useCartStore()
-  const { selectedAppIds, customAppsRequest } = useCustomizationStore()
+  const { selectedAppIds, customAppsRequest, seniorContacts, familyEmergencyContact } =
+    useCustomizationStore()
   const [apiError, setApiError] = useState<string | null>(null)
 
   const profile = profileId ? getProfileById(profileId) : null
@@ -79,6 +82,12 @@ export function CheckoutPage() {
       successUrl: `${window.location.origin}/checkout/success`,
       cancelUrl: `${window.location.origin}/checkout/cancel`,
       referralId,
+      seniorContacts:
+        profileId === 'senior' ? seniorContacts.filter((c) => c.name && c.phone) : undefined,
+      familyEmergencyContact:
+        profileId === 'family' && familyEmergencyContact?.name && familyEmergencyContact?.phone
+          ? familyEmergencyContact
+          : undefined,
     })
   }
 

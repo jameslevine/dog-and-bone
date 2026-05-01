@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCartStore } from '@/store/cartStore'
 import { useCustomizationStore } from '@/store/customizationStore'
 import { AppSelectionForm } from '@/components/organisms/AppSelectionForm'
+import { ContactsForm } from '@/components/organisms/ContactsForm'
 import { StepIndicator } from '@/components/molecules/StepIndicator'
 import { type ProfileId } from '@/types'
 
@@ -59,8 +60,9 @@ export function CustomizePage() {
       </div>
 
       {/* Form */}
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         <AppSelectionForm profileId={customProfileId || cartProfileId} onSubmit={handleSubmit} />
+        <ContactsForm profileId={customProfileId || cartProfileId} />
       </div>
     </div>
   )

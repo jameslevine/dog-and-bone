@@ -7,12 +7,19 @@ const PRICE_IDS: Record<string, string> = Object.fromEntries(
   PROFILES.map((p) => [p.id, p.stripePriceId]),
 )
 
+interface Contact {
+  name: string
+  phone: string
+}
+
 interface CheckoutRequestBody {
   profileId: string
   apps: string[]
   successUrl: string
   cancelUrl: string
   referralId: string | null
+  seniorContacts?: Contact[]
+  familyEmergencyContact?: Contact | null
 }
 
 export const handler: Handler = async (event: HandlerEvent) => {
@@ -43,7 +50,15 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }
   }
 
-  const { profileId, apps, successUrl, cancelUrl, referralId } = body
+  const {
+    profileId,
+    apps,
+    successUrl,
+    cancelUrl,
+    referralId,
+    seniorContacts,
+    familyEmergencyContact,
+  } = body
 
   if (!profileId || !PRICE_IDS[profileId]) {
     return {
@@ -73,6 +88,10 @@ export const handler: Handler = async (event: HandlerEvent) => {
         profileId,
         apps: Array.isArray(apps) ? apps.join(',') : '',
         endorsely_referral: referralId || '',
+        seniorContacts: seniorContacts ? JSON.stringify(seniorContacts) : '',
+        familyEmergencyContact: familyEmergencyContact
+          ? JSON.stringify(familyEmergencyContact)
+          : '',
       },
       client_reference_id: referralId || undefined,
       success_url: successUrl,

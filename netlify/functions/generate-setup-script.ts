@@ -63,7 +63,63 @@ const REQUIRES_APK_INSTALL: Record<string, string> = {
 
 const ALL_AVAILABLE_APP_IDS = Object.keys(APP_TO_PACKAGES)
 
-function generateScript(orderId: string, profileId: string, selectedAppIds: string[]): string {
+interface Contact {
+  name: string
+  phone: string
+}
+
+function generateContactImportStep(
+  seniorContacts: Contact[],
+  familyEmergencyContact: Contact | null,
+  profileId: string,
+): string {
+  const allContacts: Contact[] = []
+
+  if (profileId === 'senior' && seniorContacts.length > 0) {
+    allContacts.push(...seniorContacts)
+  }
+
+  if (profileId === 'family' && familyEmergencyContact) {
+    allContacts.push(familyEmergencyContact)
+  }
+
+  if (allContacts.length === 0) {
+    return '# No contacts to import'
+  }
+
+  const vcfFiles = allContacts
+    .map((contact, idx) => {
+      const safePhone = contact.phone.replace(/[^0-9+]/g, '')
+      return `
+cat > /tmp/contact-${idx}.vcf << 'VCF_EOF'
+BEGIN:VCARD
+VERSION:3.0
+FN:${contact.name}
+TEL;TYPE=CELL:${safePhone}
+END:VCARD
+VCF_EOF
+adb push /tmp/contact-${idx}.vcf /sdcard/contact-${idx}.vcf
+adb shell am start -a android.intent.action.VIEW -d "file:///sdcard/contact-${idx}.vcf" -t "text/x-vcard" 2>/dev/null || true
+sleep 0.5`
+    })
+    .join('\n')
+
+  return `
+# --- Import Contacts ---
+echo ""
+echo "Step 5.5/10: Importing ${allContacts.length} contact(s)..."
+${vcfFiles}
+echo "✅ Contact(s) imported"
+`
+}
+
+function generateScript(
+  orderId: string,
+  profileId: string,
+  selectedAppIds: string[],
+  seniorContacts: Contact[],
+  familyEmergencyContact: Contact | null,
+): string {
   const generatedAt = new Date().toISOString()
   const appsLabel = selectedAppIds.join(', ')
 
@@ -205,6 +261,8 @@ else
   echo "⚠️  dog-and-bone-launcher.apk not found - install manually"
 fi
 
+${generateContactImportStep(seniorContacts, familyEmergencyContact, profileId)}
+
 # --- Step 6: Set as Device Owner (CRITICAL for complete lockdown) ---
 echo ""
 echo "Step 7/10: Setting Device Owner mode (complete lockdown)..."
@@ -344,7 +402,32 @@ export const handler: Handler = async (event: HandlerEvent) => {
     .map((s) => s.trim())
     .filter(Boolean)
 
-  const scriptContent = generateScript(orderId, profileId, selectedAppIds)
+  // Extract contacts from metadata
+  const seniorContactsRaw = session.metadata?.seniorContacts || '[]'
+  const familyEmergencyContactRaw = session.metadata?.familyEmergencyContact || 'null'
+
+  let seniorContacts: { name: string; phone: string }[] = []
+  let familyEmergencyContact: { name: string; phone: string } | null = null
+
+  try {
+    seniorContacts = JSON.parse(seniorContactsRaw)
+  } catch {
+    // Invalid JSON, ignore
+  }
+
+  try {
+    familyEmergencyContact = JSON.parse(familyEmergencyContactRaw)
+  } catch {
+    // Invalid JSON, ignore
+  }
+
+  const scriptContent = generateScript(
+    orderId,
+    profileId,
+    selectedAppIds,
+    seniorContacts,
+    familyEmergencyContact,
+  )
 
   return {
     statusCode: 200,
