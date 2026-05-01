@@ -44,7 +44,7 @@ export function ProfileSelector() {
             )}
 
             {/* Launcher screenshot preview */}
-            <div className="mb-6 rounded-2xl overflow-hidden border-2 border-[#2C1503] bg-[#FFF8E7] aspect-[9/16]">
+            <div className="mb-6 rounded-2xl overflow-hidden border-2 border-[#2C1503] bg-[#FFF8E7] h-64">
               <img
                 src={`/images/screenshots/launcher-${profile.id}.png`}
                 alt={`${profile.name} launcher preview`}
