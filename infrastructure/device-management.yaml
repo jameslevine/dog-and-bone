@@ -1,0 +1,359 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Dog and Bone - Device Management Infrastructure
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod]
+    Description: Environment name
+
+Resources:
+  # ===== DynamoDB Table for Device Inventory =====
+  DeviceTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub dog-and-bone-devices-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: deviceSerial
+          AttributeType: S
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: deviceSerial
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: OrderIndex
+          KeySchema:
+            - AttributeName: orderId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Project
+          Value: DogAndBone
+        - Key: Component
+          Value: DeviceManagement
+
+  # ===== S3 Bucket for Remote Configurations =====
+  ConfigBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub dog-and-bone-configs-${Environment}
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 90
+      Tags:
+        - Key: Project
+          Value: DogAndBone
+
+  # ===== Lambda Function: Register Device =====
+  RegisterDeviceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub dog-and-bone-register-device-${Environment}
+      Handler: index.handler
+      Runtime: nodejs20.x
+      MemorySize: 256
+      Timeout: 10
+      Environment:
+        Variables:
+          DEVICE_TABLE: !Ref DeviceTable
+          CONFIG_BUCKET: !Ref ConfigBucket
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DeviceTable
+        - S3ReadPolicy:
+            BucketName: !Ref ConfigBucket
+      Events:
+        RegisterDevice:
+          Type: Api
+          Properties:
+            Path: /device/register
+            Method: POST
+            RestApiId: !Ref DeviceApi
+      InlineCode: |
+        import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+        import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb'
+
+        const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}))
+
+        export const handler = async (event) => {
+          const body = JSON.parse(event.body || '{}')
+          const { deviceSerial, orderId, profileId, appList, launcherVersion } = body
+
+          if (!deviceSerial) {
+            return {
+              statusCode: 400,
+              body: JSON.stringify({ error: 'deviceSerial required' }),
+            }
+          }
+
+          const timestamp = new Date().toISOString()
+
+          await ddb.send(new PutCommand({
+            TableName: process.env.DEVICE_TABLE,
+            Item: {
+              deviceSerial,
+              orderId: orderId || 'unknown',
+              profileId: profileId || 'unknown',
+              appList: appList || [],
+              launcherVersion: launcherVersion || '1.0.0',
+              firstSeen: timestamp,
+              lastSeen: timestamp,
+              status: 'active',
+              configVersion: 1,
+            },
+          }))
+
+          return {
+            statusCode: 200,
+            body: JSON.stringify({ success: true, deviceSerial }),
+          }
+        }
+
+  # ===== Lambda Function: Get Device Config =====
+  GetConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub dog-and-bone-get-config-${Environment}
+      Handler: index.handler
+      Runtime: nodejs20.x
+      MemorySize: 256
+      Timeout: 10
+      Environment:
+        Variables:
+          CONFIG_BUCKET: !Ref ConfigBucket
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref ConfigBucket
+      Events:
+        GetConfig:
+          Type: Api
+          Properties:
+            Path: /device/config/{serial}
+            Method: GET
+            RestApiId: !Ref DeviceApi
+      InlineCode: |
+        import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
+
+        const s3 = new S3Client({})
+
+        export const handler = async (event) => {
+          const serial = event.pathParameters?.serial
+
+          if (!serial) {
+            return {
+              statusCode: 400,
+              body: JSON.stringify({ error: 'Device serial required' }),
+            }
+          }
+
+          try {
+            const response = await s3.send(new GetObjectCommand({
+              Bucket: process.env.CONFIG_BUCKET,
+              Key: `devices/${serial}/app-config.json`,
+            }))
+
+            const config = await response.Body.transformToString()
+
+            return {
+              statusCode: 200,
+              headers: { 'Content-Type': 'application/json' },
+              body: config,
+            }
+          } catch (error) {
+            if (error.name === 'NoSuchKey') {
+              return {
+                statusCode: 404,
+                body: JSON.stringify({ error: 'No config found for this device' }),
+              }
+            }
+            throw error
+          }
+        }
+
+  # ===== Lambda Function: Update Device Config =====
+  UpdateConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub dog-and-bone-update-config-${Environment}
+      Handler: index.handler
+      Runtime: nodejs20.x
+      MemorySize: 256
+      Timeout: 10
+      Environment:
+        Variables:
+          CONFIG_BUCKET: !Ref ConfigBucket
+          DEVICE_TABLE: !Ref DeviceTable
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref ConfigBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DeviceTable
+      Events:
+        UpdateConfig:
+          Type: Api
+          Properties:
+            Path: /device/config/{serial}
+            Method: PUT
+            RestApiId: !Ref DeviceApi
+      InlineCode: |
+        import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+        import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+        import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb'
+
+        const s3 = new S3Client({})
+        const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}))
+
+        export const handler = async (event) => {
+          const serial = event.pathParameters?.serial
+          const config = event.body
+
+          if (!serial || !config) {
+            return {
+              statusCode: 400,
+              body: JSON.stringify({ error: 'Serial and config required' }),
+            }
+          }
+
+          // Save new config to S3
+          await s3.send(new PutObjectCommand({
+            Bucket: process.env.CONFIG_BUCKET,
+            Key: `devices/${serial}/app-config.json`,
+            Body: config,
+            ContentType: 'application/json',
+          }))
+
+          // Update device record
+          await ddb.send(new UpdateCommand({
+            TableName: process.env.DEVICE_TABLE,
+            Key: { deviceSerial: serial },
+            UpdateExpression: 'SET configVersion = configVersion + :inc, lastConfigUpdate = :now',
+            ExpressionAttributeValues: {
+              ':inc': 1,
+              ':now': new Date().toISOString(),
+            },
+          }))
+
+          return {
+            statusCode: 200,
+            body: JSON.stringify({ success: true, serial }),
+          }
+        }
+
+  # ===== Lambda Function: List All Devices =====
+  ListDevicesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub dog-and-bone-list-devices-${Environment}
+      Handler: index.handler
+      Runtime: nodejs20.x
+      MemorySize: 256
+      Timeout: 10
+      Environment:
+        Variables:
+          DEVICE_TABLE: !Ref DeviceTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DeviceTable
+      Events:
+        ListDevices:
+          Type: Api
+          Properties:
+            Path: /devices
+            Method: GET
+            RestApiId: !Ref DeviceApi
+      InlineCode: |
+        import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb'
+        import { unmarshall } from '@aws-sdk/util-dynamodb'
+
+        const ddb = new DynamoDBClient({})
+
+        export const handler = async () => {
+          const response = await ddb.send(new ScanCommand({
+            TableName: process.env.DEVICE_TABLE,
+          }))
+
+          const devices = (response.Items || []).map(item => unmarshall(item))
+
+          return {
+            statusCode: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ devices }),
+          }
+        }
+
+  # ===== API Gateway =====
+  DeviceApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub dog-and-bone-device-api-${Environment}
+      StageName: !Ref Environment
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,X-Api-Key'"
+        AllowMethods: "'GET,POST,PUT,OPTIONS'"
+      Auth:
+        ApiKeyRequired: true
+
+  # ===== API Key for Device Authentication =====
+  DeviceApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Name: !Sub dog-and-bone-device-key-${Environment}
+      Enabled: true
+
+  DeviceApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    DependsOn: DeviceApiStage
+    Properties:
+      UsagePlanName: !Sub dog-and-bone-device-plan-${Environment}
+      ApiStages:
+        - ApiId: !Ref DeviceApi
+          Stage: !Ref Environment
+
+  DeviceApiUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref DeviceApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref DeviceApiUsagePlan
+
+Outputs:
+  DeviceApiUrl:
+    Description: Device Management API URL
+    Value: !Sub https://${DeviceApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+
+  DeviceTableName:
+    Description: DynamoDB Device Table
+    Value: !Ref DeviceTable
+
+  ConfigBucketName:
+    Description: S3 Config Bucket
+    Value: !Ref ConfigBucket
+
+  ApiKeyId:
+    Description: API Key ID for device authentication
+    Value: !Ref DeviceApiKey
