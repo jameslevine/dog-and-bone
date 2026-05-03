@@ -183,7 +183,7 @@ export function AboutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-[#2C1503] mb-6">
-                Why the Samsung Galaxy A12?
+                Why Android?
               </h2>
               <div className="flex flex-col gap-5 text-[#5A4A3A] text-lg leading-relaxed">
                 <p>
@@ -192,9 +192,9 @@ export function AboutPage() {
                   software.
                 </p>
                 <p>
-                  The Galaxy A12 hit every mark. It's a mid-range Android device with a large
-                  screen, a massive battery, and enough processing power to run our launcher and
-                  essential apps without lag.
+                  We chose mid-range Android devices with large screens, massive batteries, and
+                  enough processing power to run our launcher and essential apps without lag.
+                  Currently using Samsung Galaxy A12 (subject to stock availability).
                 </p>
                 <p>
                   At <strong className="text-[#2C1503]">£149</strong>, it's priced to be accessible.

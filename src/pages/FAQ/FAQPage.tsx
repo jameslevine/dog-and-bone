@@ -5,7 +5,7 @@ export function FAQPage() {
       questions: [
         {
           q: `What phone model do you use?`,
-          a: `We use the Samsung Galaxy A12, a reliable Android device with a large screen, long battery life, and excellent camera. It's been factory-configured to be a minimalist phone.`,
+          a: `We currently use the your phone, a reliable Android device with excellent battery life and camera. The specific model may change based on stock availability, but we always choose devices that prioritize durability, battery life, and ease of use.`,
         },
         {
           q: `Can I add more apps later?`,
@@ -30,7 +30,7 @@ export function FAQPage() {
         },
         {
           q: `What's included in the box?`,
-          a: `Your configured Samsung Galaxy A12 phone, USB-C charging cable, and setup instructions.`,
+          a: `Your configured phone, USB-C charging cable, and setup instructions.`,
         },
         {
           q: `Can I return the phone?`,
@@ -93,7 +93,7 @@ export function FAQPage() {
         },
         {
           q: `What Android version does it run?`,
-          a: `Samsung Galaxy A12 runs Android 11 or 12 depending on when it was manufactured, with Samsung One UI.`,
+          a: `The phone runs Android 11 or 12 with Samsung One UI. The specific version depends on the device we source.`,
         },
         {
           q: `Will the phone receive software updates?`,

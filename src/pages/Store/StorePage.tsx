@@ -40,8 +40,8 @@ export function StorePage() {
             Choose Your Phone
           </h1>
           <p className="text-lg text-[#5A4A3A] max-w-2xl mx-auto leading-relaxed">
-            Every Dog and Bone phone is a Samsung Galaxy A12 — a reliable, proven Android handset —
-            hand-configured by our team before it ships to you.
+            Every Dog and Bone phone is a reliable Android device hand-configured by our team before
+            it ships to you. Currently using Samsung Galaxy A12 (subject to availability).
           </p>
         </div>
       </section>
@@ -72,7 +72,7 @@ export function StorePage() {
             The hardware
           </h2>
           <p className="text-center text-[#5A4A3A] mb-10 max-w-lg mx-auto">
-            Samsung Galaxy A12 — a solid, affordable phone with everything you actually need.
+            A solid, affordable Android device with excellent battery life and everything you need.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
