@@ -290,11 +290,15 @@
           throw new Error(data.error || 'Setup failed')
         }
       } catch (error) {
+        const errorData = await error.response?.json?.() || { error: error.message }
         progressContainer.innerHTML = `
           <div class="alert alert-error">
             <strong>❌ Setup Failed</strong><br>
-            ${error.message}
+            ${errorData.error || error.message}
+            ${errorData.details ? `<br><small>${errorData.details}</small>` : ''}
           </div>
+          ${errorData.stderr ? `<details><summary>Error Output</summary><pre style="background: #2C1503; color: #E63946; padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 10px; font-size: 12px;">${errorData.stderr}</pre></details>` : ''}
+          ${errorData.stdout ? `<details><summary>Script Output</summary><pre style="background: #2C1503; color: #FFB703; padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 10px; font-size: 12px;">${errorData.stdout}</pre></details>` : ''}
         `
       }
     }

@@ -143,10 +143,12 @@ app.post('/api/run-setup/:orderId', async (req, res) => {
       errors: stderr || null,
     })
   } catch (error) {
+    console.error('Setup script error:', error)
     res.status(500).json({
       error: 'Setup script failed',
       details: error.message,
       stderr: error.stderr || null,
+      stdout: error.stdout || null,
     })
   }
 })
