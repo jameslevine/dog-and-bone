@@ -9,6 +9,7 @@ import { BlogListPage, BlogPostPage } from '@/pages/Blog'
 import { AffiliatePage } from '@/pages/Affiliate'
 import { AboutPage } from '@/pages/About'
 import { FAQPage } from '@/pages/FAQ'
+import { AdminDashboard } from '@/pages/Admin'
 import { NotFoundPage } from '@/pages/NotFound'
 
 export const router = createBrowserRouter([
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: 'affiliate', element: <AffiliatePage /> },
       { path: 'faq', element: <FAQPage /> },
       { path: 'about', element: <AboutPage /> },
+      { path: 'admin', element: <AdminDashboard /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
