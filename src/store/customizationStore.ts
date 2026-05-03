@@ -13,6 +13,8 @@ interface CustomizationState {
   customAppsRequest: string
   seniorContacts: Contact[]
   familyEmergencyContact: Contact | null
+  wifiSsid: string
+  wifiPassword: string
 
   setProfile: (profileId: ProfileId) => void
   toggleApp: (appId: string) => void
@@ -20,6 +22,7 @@ interface CustomizationState {
   setCustomAppsRequest: (text: string) => void
   setSeniorContacts: (contacts: Contact[]) => void
   setFamilyEmergencyContact: (contact: Contact | null) => void
+  setWifiCredentials: (ssid: string, password: string) => void
   reset: () => void
 
   /** Serialise selected apps to comma-separated string for Stripe metadata */
@@ -32,6 +35,8 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
   customAppsRequest: '',
   seniorContacts: [],
   familyEmergencyContact: null,
+  wifiSsid: '',
+  wifiPassword: '',
 
   setProfile: (profileId) => {
     const profile = PROFILES.find((p) => p.id === profileId)
@@ -60,6 +65,8 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
 
   setFamilyEmergencyContact: (contact) => set({ familyEmergencyContact: contact }),
 
+  setWifiCredentials: (ssid, password) => set({ wifiSsid: ssid, wifiPassword: password }),
+
   reset: () =>
     set({
       profileId: null,
@@ -67,6 +74,8 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
       customAppsRequest: '',
       seniorContacts: [],
       familyEmergencyContact: null,
+      wifiSsid: '',
+      wifiPassword: '',
     }),
 
   serialiseApps: () => get().selectedAppIds.join(','),

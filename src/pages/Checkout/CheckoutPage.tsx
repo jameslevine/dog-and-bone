@@ -27,6 +27,8 @@ interface CheckoutBody {
   referralId: string | null
   seniorContacts?: { name: string; phone: string }[]
   familyEmergencyContact?: { name: string; phone: string } | null
+  wifiSsid?: string
+  wifiPassword?: string
 }
 
 async function createCheckoutSession(body: CheckoutBody): Promise<CheckoutSessionResponse> {
@@ -47,8 +49,14 @@ async function createCheckoutSession(body: CheckoutBody): Promise<CheckoutSessio
 export function CheckoutPage() {
   const navigate = useNavigate()
   const { profileId } = useCartStore()
-  const { selectedAppIds, customAppsRequest, seniorContacts, familyEmergencyContact } =
-    useCustomizationStore()
+  const {
+    selectedAppIds,
+    customAppsRequest,
+    seniorContacts,
+    familyEmergencyContact,
+    wifiSsid,
+    wifiPassword,
+  } = useCustomizationStore()
   const [apiError, setApiError] = useState<string | null>(null)
 
   const profile = profileId ? getProfileById(profileId) : null
@@ -88,6 +96,8 @@ export function CheckoutPage() {
         profileId === 'family' && familyEmergencyContact?.name && familyEmergencyContact?.phone
           ? familyEmergencyContact
           : undefined,
+      wifiSsid: wifiSsid || undefined,
+      wifiPassword: wifiPassword || undefined,
     })
   }
 
