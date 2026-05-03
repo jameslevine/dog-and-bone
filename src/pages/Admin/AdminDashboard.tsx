@@ -24,6 +24,7 @@ export function AdminDashboard() {
       setIsAuthenticated(true)
       fetchOrders()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleLogin = (e: React.FormEvent) => {
@@ -49,21 +50,17 @@ export function AdminDashboard() {
   const fetchOrders = async () => {
     setLoading(true)
     try {
-      // TODO: Create Netlify function to list Stripe orders
-      // For now, show placeholder
-      setOrders([
-        {
-          id: 'cs_test_example',
-          created: Date.now(),
-          amount: 14900,
-          profileId: 'essential',
-          apps: 'phone,sms,camera',
-          customerEmail: 'customer@example.com',
-          status: 'paid',
-        },
-      ])
+      const response = await fetch(`/.netlify/functions/list-orders?secret=${adminSecret}&limit=50`)
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders')
+      }
+
+      const data = await response.json()
+      setOrders(data.orders || [])
     } catch (error) {
       console.error('Failed to fetch orders:', error)
+      alert('Failed to load orders. Check console for details.')
     } finally {
       setLoading(false)
     }
