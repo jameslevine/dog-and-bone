@@ -297,20 +297,22 @@ echo "⚠️  DEVICE MUST HAVE NO ACCOUNTS (Google, Samsung, Microsoft)"
 echo "    If this fails, factory reset and skip all accounts during setup"
 echo ""
 
-adb shell dpm set-device-owner com.dogandbonephone.launcher/.AdminReceiver
+adb shell dpm set-device-owner com.dogandbonephone.launcher/.AdminReceiver 2>&1 | tee /tmp/device-owner-output.txt
 
-if [ $? -eq 0 ]; then
+if grep -q "Success: Device owner set" /tmp/device-owner-output.txt; then
   echo "✅ Device Owner enabled - launcher is now in full kiosk mode"
   echo "   Home button is now completely blocked"
+elif grep -q "device owner is already set" /tmp/device-owner-output.txt; then
+  echo "✅ Device Owner already set - lockdown is active"
+  echo "   Home button is already blocked"
 else
-  echo "❌ Device Owner setup failed!"
-  echo "   The device has accounts configured. To fix:"
-  echo "   1. Factory reset the device"
-  echo "   2. Skip ALL accounts during setup (Google, Samsung, Microsoft)"
-  echo "   3. Re-run this script"
+  echo "⚠️  Device Owner setup had issues"
+  cat /tmp/device-owner-output.txt
   echo ""
-  echo "⚠️  Without Device Owner, users can exit the launcher!"
+  echo "If the device has accounts, factory reset and skip all accounts during setup."
 fi
+
+# Continue regardless - Device Owner may already be set from previous run
 
 ${generateWifiConfigStep(wifiSsid, wifiPassword)}
 
