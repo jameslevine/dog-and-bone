@@ -20,6 +20,8 @@ interface CheckoutRequestBody {
   referralId: string | null
   seniorContacts?: Contact[]
   familyEmergencyContact?: Contact | null
+  wifiSsid?: string
+  wifiPassword?: string
 }
 
 export const handler: Handler = async (event: HandlerEvent) => {
@@ -58,6 +60,8 @@ export const handler: Handler = async (event: HandlerEvent) => {
     referralId,
     seniorContacts,
     familyEmergencyContact,
+    wifiSsid,
+    wifiPassword,
   } = body
 
   if (!profileId || !PRICE_IDS[profileId]) {
@@ -92,6 +96,8 @@ export const handler: Handler = async (event: HandlerEvent) => {
         familyEmergencyContact: familyEmergencyContact
           ? JSON.stringify(familyEmergencyContact)
           : '',
+        wifiSsid: wifiSsid || '',
+        wifiPassword: wifiPassword || '',
       },
       client_reference_id: referralId || undefined,
       success_url: successUrl,

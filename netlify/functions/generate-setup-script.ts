@@ -68,6 +68,30 @@ interface Contact {
   phone: string
 }
 
+function generateWifiConfigStep(wifiSsid: string, wifiPassword: string): string {
+  if (!wifiSsid || !wifiPassword) {
+    return '# No WiFi credentials provided - skip WiFi configuration'
+  }
+
+  // Escape special characters for ADB shell
+  const escapedSsid = wifiSsid.replace(/"/g, '\\"')
+  const escapedPassword = wifiPassword.replace(/"/g, '\\"')
+
+  return `
+# --- Configure WiFi ---
+echo ""
+echo "Step 7.5/10: Configuring WiFi..."
+echo "  Network: ${escapedSsid}"
+
+# Add WiFi network via ADB
+adb shell "cmd wifi add-network \\"${escapedSsid}\\" wpa2 \\"${escapedPassword}\\""
+adb shell "svc wifi enable"
+
+echo "✅ WiFi configured and enabled"
+echo "  Phone will auto-connect to ${escapedSsid}"
+`
+}
+
 function generateContactImportStep(
   seniorContacts: Contact[],
   familyEmergencyContact: Contact | null,
@@ -119,6 +143,8 @@ function generateScript(
   selectedAppIds: string[],
   seniorContacts: Contact[],
   familyEmergencyContact: Contact | null,
+  wifiSsid: string,
+  wifiPassword: string,
 ): string {
   const generatedAt = new Date().toISOString()
   const appsLabel = selectedAppIds.join(', ')
@@ -286,6 +312,8 @@ else
   echo "⚠️  Without Device Owner, users can exit the launcher!"
 fi
 
+${generateWifiConfigStep(wifiSsid, wifiPassword)}
+
 # --- Step 7: Set as default launcher ---
 echo ""
 echo "Step 8/10: Setting as default home launcher..."
@@ -421,12 +449,18 @@ export const handler: Handler = async (event: HandlerEvent) => {
     // Invalid JSON, ignore
   }
 
+  // Extract WiFi credentials
+  const wifiSsid = session.metadata?.wifiSsid || ''
+  const wifiPassword = session.metadata?.wifiPassword || ''
+
   const scriptContent = generateScript(
     orderId,
     profileId,
     selectedAppIds,
     seniorContacts,
     familyEmergencyContact,
+    wifiSsid,
+    wifiPassword,
   )
 
   return {
