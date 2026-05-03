@@ -265,13 +265,29 @@
       const progressContainer = document.getElementById('progress-container')
       progressContainer.innerHTML = `
         <div class="alert alert-info">
-          <strong>Running setup for ${orderId}...</strong><br>
-          This may take 2-3 minutes. Do not disconnect the device.
+          <strong>Generating setup script for ${orderId}...</strong><br>
+          Step 1/2: Fetching order details and generating script...
         </div>
-        <div class="loading">⏳ Configuring device...</div>
+        <div class="loading">⏳ Generating...</div>
       `
 
       try {
+        // Step 1: Generate the script
+        const genRes = await fetch(`/api/generate-script/${orderId}`, { method: 'POST' })
+        if (!genRes.ok) {
+          const error = await genRes.json()
+          throw new Error(error.details || 'Failed to generate script')
+        }
+
+        progressContainer.innerHTML = `
+          <div class="alert alert-info">
+            <strong>Running setup for ${orderId}...</strong><br>
+            Step 2/2: Configuring device (2-3 minutes)...
+          </div>
+          <div class="loading">⏳ Configuring device...</div>
+        `
+
+        // Step 2: Run the script
         const res = await fetch(`/api/run-setup/${orderId}`, { method: 'POST' })
         const data = await res.json()
 
