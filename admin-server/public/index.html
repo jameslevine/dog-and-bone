@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dog and Bone - Admin Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #FFF8E7;
+      color: #2C1503;
+      padding: 20px;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    header {
+      background: #2C1503;
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border: 3px solid #FFB703;
+    }
+
+    h1 { font-size: 28px; font-weight: 800; }
+    h2 { font-size: 20px; font-weight: 700; margin: 20px 0 15px; }
+
+    .status-bar {
+      background: white;
+      border: 2px solid #2C1503;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #E63946;
+    }
+
+    .dot.connected { background: #2D6A4F; }
+
+    .section {
+      background: white;
+      border: 2px solid #2C1503;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th {
+      background: #FFB703;
+      color: #2C1503;
+      font-weight: 700;
+      text-align: left;
+      padding: 12px;
+      border-bottom: 2px solid #2C1503;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #F5EDD8;
+    }
+
+    tr:hover { background: #FFF8E7; }
+
+    button {
+      background: #FFB703;
+      color: #2C1503;
+      border: 2px solid #2C1503;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    button:hover { background: #E6A500; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-paid { background: #2D6A4F; color: white; }
+    .badge-unpaid { background: #E63946; color: white; }
+    .badge-profile { background: #FFB703; color: #2C1503; }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 2px solid;
+    }
+
+    .alert-error { background: #FFE5E7; border-color: #E63946; color: #C62E3A; }
+    .alert-success { background: #E8F5E9; border-color: #2D6A4F; color: #1B4332; }
+    .alert-info { background: #FFF4E6; border-color: #FFB703; color: #8B6914; }
+
+    code {
+      background: #2C1503;
+      color: #FFB703;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    .loading { text-align: center; padding: 40px; color: #5A4A3A; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🐕 Dog and Bone - Local Admin Dashboard</h1>
+      <p style="margin-top: 8px; opacity: 0.9;">Device configuration and order management</p>
+    </header>
+
+    <div class="status-bar">
+      <div class="status-indicator">
+        <span class="dot" id="device-indicator"></span>
+        <span id="device-status">Checking for devices...</span>
+      </div>
+      <button onclick="refreshDevices()">Refresh</button>
+    </div>
+
+    <div class="section">
+      <h2>Recent Orders</h2>
+      <div id="orders-container">
+        <div class="loading">Loading orders from Stripe...</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Setup Progress</h2>
+      <div id="progress-container">
+        <p style="color: #5A4A3A;">Select an order and click "Run Setup" to configure a connected device.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentDevice = null
+    let orders = []
+
+    // Fetch connected devices
+    async function fetchDevices() {
+      try {
+        const res = await fetch('/api/devices')
+        const data = await res.json()
+
+        const connectedDevice = data.devices?.find(d => d.connected)
+        currentDevice = connectedDevice || null
+
+        const indicator = document.getElementById('device-indicator')
+        const status = document.getElementById('device-status')
+
+        if (connectedDevice) {
+          indicator.classList.add('connected')
+          status.textContent = `Device connected: ${connectedDevice.serial}`
+        } else {
+          indicator.classList.remove('connected')
+          status.textContent = 'No device connected'
+        }
+      } catch (error) {
+        console.error('Failed to fetch devices:', error)
+        document.getElementById('device-status').textContent = 'ADB error - check installation'
+      }
+    }
+
+    // Fetch Stripe orders
+    async function fetchOrders() {
+      try {
+        const res = await fetch('/api/orders')
+        const data = await res.json()
+        orders = data.orders || []
+        renderOrders()
+      } catch (error) {
+        console.error('Failed to fetch orders:', error)
+        document.getElementById('orders-container').innerHTML =
+          '<div class="alert alert-error">Failed to load orders. Check network connection.</div>'
+      }
+    }
+
+    // Render orders table
+    function renderOrders() {
+      const container = document.getElementById('orders-container')
+
+      if (orders.length === 0) {
+        container.innerHTML = '<p style="color: #5A4A3A;">No orders found.</p>'
+        return
+      }
+
+      const table = `
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Profile</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orders.map(order => `
+              <tr>
+                <td><code>${order.id.substring(0, 20)}...</code></td>
+                <td>${order.customerEmail}</td>
+                <td><span class="badge badge-profile">${order.profileId}</span></td>
+                <td>£${(order.amount / 100).toFixed(2)}</td>
+                <td><span class="badge badge-${order.status}">${order.status}</span></td>
+                <td>
+                  <button onclick="runSetup('${order.id}')" ${!currentDevice ? 'disabled' : ''}>
+                    ${!currentDevice ? 'No Device' : 'Run Setup'}
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `
+
+      container.innerHTML = table
+    }
+
+    // Run setup script for an order
+    async function runSetup(orderId) {
+      if (!currentDevice) {
+        alert('No device connected! Connect a device via USB and enable USB debugging.')
+        return
+      }
+
+      if (!confirm(`Run setup script for order ${orderId}?\n\nThis will configure the connected device.`)) {
+        return
+      }
+
+      const progressContainer = document.getElementById('progress-container')
+      progressContainer.innerHTML = `
+        <div class="alert alert-info">
+          <strong>Running setup for ${orderId}...</strong><br>
+          This may take 2-3 minutes. Do not disconnect the device.
+        </div>
+        <div class="loading">⏳ Configuring device...</div>
+      `
+
+      try {
+        const res = await fetch(`/api/run-setup/${orderId}`, { method: 'POST' })
+        const data = await res.json()
+
+        if (data.success) {
+          progressContainer.innerHTML = `
+            <div class="alert alert-success">
+              <strong>✅ Setup Complete!</strong><br>
+              Order ${orderId} has been configured on device ${currentDevice.serial}.
+            </div>
+            <details>
+              <summary style="cursor: pointer; font-weight: 600; margin-top: 10px;">View Output</summary>
+              <pre style="background: #2C1503; color: #FFB703; padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 10px; font-size: 12px;">${data.output}</pre>
+            </details>
+          `
+        } else {
+          throw new Error(data.error || 'Setup failed')
+        }
+      } catch (error) {
+        progressContainer.innerHTML = `
+          <div class="alert alert-error">
+            <strong>❌ Setup Failed</strong><br>
+            ${error.message}
+          </div>
+        `
+      }
+    }
+
+    function refreshDevices() {
+      fetchDevices()
+      fetchOrders()
+    }
+
+    // Auto-refresh every 5 seconds
+    setInterval(fetchDevices, 5000)
+    setInterval(fetchOrders, 30000)
+
+    // Initial load
+    fetchDevices()
+    fetchOrders()
+  </script>
+</body>
+</html>
