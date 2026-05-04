@@ -153,6 +153,58 @@ app.post('/api/run-setup/:orderId', async (req, res) => {
   }
 })
 
+// List all devices from AWS
+app.get('/api/devices/inventory', async (req, res) => {
+  try {
+    const awsApiUrl =
+      process.env.AWS_DEVICE_API_URL || 'https://9ces4tqpq8.execute-api.eu-west-2.amazonaws.com/dev'
+    const awsApiKey = process.env.AWS_DEVICE_API_KEY || 'ACmh8yUtjE6mxVuRKMOYG7PjrwoBSa336tIqTd8w'
+
+    const response = await fetch(`${awsApiUrl}/devices`, {
+      headers: { 'x-api-key': awsApiKey },
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch device inventory from AWS')
+    }
+
+    const data = await response.json()
+    res.json(data)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch device inventory', details: error.message })
+  }
+})
+
+// Update device config remotely
+app.put('/api/devices/:serial/config', async (req, res) => {
+  try {
+    const { serial } = req.params
+    const config = req.body
+
+    const awsApiUrl =
+      process.env.AWS_DEVICE_API_URL || 'https://9ces4tqpq8.execute-api.eu-west-2.amazonaws.com/dev'
+    const awsApiKey = process.env.AWS_DEVICE_API_KEY || 'ACmh8yUtjE6mxVuRKMOYG7PjrwoBSa336tIqTd8w'
+
+    const response = await fetch(`${awsApiUrl}/device/config/${serial}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': awsApiKey,
+      },
+      body: JSON.stringify(config),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to update device config')
+    }
+
+    const data = await response.json()
+    res.json(data)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update config', details: error.message })
+  }
+})
+
 // Serve admin UI
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'))

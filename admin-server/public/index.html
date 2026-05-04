@@ -151,6 +151,13 @@
     </div>
 
     <div class="section">
+      <h2>Device Inventory</h2>
+      <div id="inventory-container">
+        <div class="loading">Loading devices from AWS...</div>
+      </div>
+    </div>
+
+    <div class="section">
       <h2>Recent Orders</h2>
       <div id="orders-container">
         <div class="loading">Loading orders from Stripe...</div>
@@ -168,6 +175,7 @@
   <script>
     let currentDevice = null
     let orders = []
+    let devices = []
 
     // Fetch connected devices
     async function fetchDevices() {
@@ -194,6 +202,20 @@
       }
     }
 
+    // Fetch device inventory from AWS
+    async function fetchInventory() {
+      try {
+        const res = await fetch('/api/devices/inventory')
+        const data = await res.json()
+        devices = data.devices || []
+        renderInventory()
+      } catch (error) {
+        console.error('Failed to fetch inventory:', error)
+        document.getElementById('inventory-container').innerHTML =
+          '<div class="alert alert-error">Failed to load device inventory.</div>'
+      }
+    }
+
     // Fetch Stripe orders
     async function fetchOrders() {
       try {
@@ -206,6 +228,57 @@
         document.getElementById('orders-container').innerHTML =
           '<div class="alert alert-error">Failed to load orders. Check network connection.</div>'
       }
+    }
+
+    // Render device inventory table
+    function renderInventory() {
+      const container = document.getElementById('inventory-container')
+
+      if (devices.length === 0) {
+        container.innerHTML = '<p style="color: #5A4A3A;">No devices registered yet. Devices register when first configured.</p>'
+        return
+      }
+
+      const now = Date.now()
+      const table = `
+        <table>
+          <thead>
+            <tr>
+              <th>Serial</th>
+              <th>Order ID</th>
+              <th>Profile</th>
+              <th>Last Seen</th>
+              <th>Config Ver</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${devices.map(device => {
+              const lastSeen = new Date(device.lastSeen)
+              const hoursAgo = Math.floor((now - lastSeen.getTime()) / (1000 * 60 * 60))
+              const isOnline = hoursAgo < 24
+
+              return `
+              <tr>
+                <td><code>${device.deviceSerial}</code></td>
+                <td><code>${device.orderId.substring(0, 15)}...</code></td>
+                <td><span class="badge badge-profile">${device.profileId}</span></td>
+                <td style="color: ${isOnline ? '#2D6A4F' : '#E63946'}">
+                  ${hoursAgo < 1 ? 'Just now' : hoursAgo + 'h ago'}
+                </td>
+                <td>v${device.configVersion || 1}</td>
+                <td>
+                  <button onclick="editConfig('${device.deviceSerial}')" style="font-size: 12px; padding: 6px 12px;">
+                    Edit Config
+                  </button>
+                </td>
+              </tr>
+            `}).join('')}
+          </tbody>
+        </table>
+      `
+
+      container.innerHTML = table
     }
 
     // Render orders table
@@ -319,18 +392,69 @@
       }
     }
 
+    // Edit device configuration
+    function editConfig(serial) {
+      const device = devices.find(d => d.deviceSerial === serial)
+      if (!device) {
+        alert('Device not found')
+        return
+      }
+
+      // Simple prompt for now - can be enhanced to full modal editor
+      const newApps = prompt(`Edit app list for ${serial}\n\nCurrent apps: ${device.appList.join(', ')}\n\nEnter new comma-separated app IDs:`, device.appList.join(','))
+
+      if (newApps === null) return // Cancelled
+
+      const config = {
+        profile: device.profileId,
+        apps: newApps.split(',').map(a => a.trim()).filter(Boolean),
+        showEmergencyButton: device.profileId === 'senior',
+        pinEnabled: device.profileId === 'family',
+        emergencyNumber: device.profileId === 'senior' ? '999' : '',
+        largeText: device.profileId === 'senior'
+      }
+
+      if (confirm(`Push new config to ${serial}?\n\nDevice will apply changes on next restart.`)) {
+        updateDeviceConfig(serial, config)
+      }
+    }
+
+    // Update device config via API
+    async function updateDeviceConfig(serial, config) {
+      try {
+        const res = await fetch(`/api/devices/${serial}/config`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config)
+        })
+
+        if (res.ok) {
+          alert(`✅ Config updated for ${serial}!\n\nDevice will apply changes within 1 hour (next config sync).`)
+          fetchInventory() // Refresh inventory
+        } else {
+          const error = await res.json()
+          alert(`Failed to update config: ${error.details || error.error}`)
+        }
+      } catch (error) {
+        alert(`Error: ${error.message}`)
+      }
+    }
+
     function refreshDevices() {
       fetchDevices()
       fetchOrders()
+      fetchInventory()
     }
 
-    // Auto-refresh every 5 seconds
-    setInterval(fetchDevices, 5000)
-    setInterval(fetchOrders, 30000)
+    // Auto-refresh
+    setInterval(fetchDevices, 5000)  // Connected devices every 5s
+    setInterval(fetchOrders, 30000)  // Orders every 30s
+    setInterval(fetchInventory, 60000) // Inventory every 60s
 
     // Initial load
     fetchDevices()
     fetchOrders()
+    fetchInventory()
   </script>
 </body>
 </html>
