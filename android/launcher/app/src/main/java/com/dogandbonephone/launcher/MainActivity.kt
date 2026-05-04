@@ -15,7 +15,13 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.lifecycle.lifecycleScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.dogandbonephone.launcher.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 /**
  * The main Dog and Bone launcher activity.
@@ -71,6 +77,26 @@ class MainActivity : AppCompatActivity() {
         if (config.largeText) {
             applyLargeTextMode()
         }
+
+        // Register device with AWS backend (async, fails silently if no internet)
+        lifecycleScope.launch {
+            DeviceRegistration.registerDevice(this@MainActivity, config)
+        }
+
+        // Schedule periodic config sync (every hour)
+        scheduleConfigSync()
+    }
+
+    private fun scheduleConfigSync() {
+        val syncWorkRequest = PeriodicWorkRequestBuilder<ConfigSyncWorker>(
+            1, TimeUnit.HOURS
+        ).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "config-sync",
+            ExistingPeriodicWorkPolicy.KEEP,
+            syncWorkRequest
+        )
     }
 
     private fun applyLargeTextMode() {
