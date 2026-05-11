@@ -54,7 +54,10 @@ app.get('/api/devices', async (req, res) => {
 // Fetch Stripe orders
 app.get('/api/orders', async (req, res) => {
   try {
-    const adminSecret = process.env.ADMIN_SECRET || '886e7b2a7e3523a84b45f177c0a29a'
+    const adminSecret = process.env.ADMIN_SECRET
+    if (!adminSecret) {
+      return res.status(500).json({ error: 'ADMIN_SECRET env var must be set' })
+    }
     const netlifyUrl = process.env.NETLIFY_URL || 'http://localhost:8888'
 
     const response = await fetch(
@@ -76,7 +79,10 @@ app.get('/api/orders', async (req, res) => {
 app.post('/api/generate-script/:orderId', async (req, res) => {
   try {
     const { orderId } = req.params
-    const adminSecret = process.env.ADMIN_SECRET || '886e7b2a7e3523a84b45f177c0a29a'
+    const adminSecret = process.env.ADMIN_SECRET
+    if (!adminSecret) {
+      return res.status(500).json({ error: 'ADMIN_SECRET env var must be set' })
+    }
     const netlifyUrl = process.env.NETLIFY_URL || 'http://localhost:8888'
 
     const response = await fetch(
@@ -156,9 +162,13 @@ app.post('/api/run-setup/:orderId', async (req, res) => {
 // List all devices from AWS
 app.get('/api/devices/inventory', async (req, res) => {
   try {
-    const awsApiUrl =
-      process.env.AWS_DEVICE_API_URL || 'https://9ces4tqpq8.execute-api.eu-west-2.amazonaws.com/dev'
-    const awsApiKey = process.env.AWS_DEVICE_API_KEY || 'ACmh8yUtjE6mxVuRKMOYG7PjrwoBSa336tIqTd8w'
+    const awsApiUrl = process.env.AWS_DEVICE_API_URL
+    const awsApiKey = process.env.AWS_DEVICE_API_KEY
+    if (!awsApiUrl || !awsApiKey) {
+      return res
+        .status(500)
+        .json({ error: 'AWS_DEVICE_API_URL and AWS_DEVICE_API_KEY must be set' })
+    }
 
     const response = await fetch(`${awsApiUrl}/devices`, {
       headers: { 'x-api-key': awsApiKey },
@@ -181,9 +191,13 @@ app.put('/api/devices/:serial/config', async (req, res) => {
     const { serial } = req.params
     const config = req.body
 
-    const awsApiUrl =
-      process.env.AWS_DEVICE_API_URL || 'https://9ces4tqpq8.execute-api.eu-west-2.amazonaws.com/dev'
-    const awsApiKey = process.env.AWS_DEVICE_API_KEY || 'ACmh8yUtjE6mxVuRKMOYG7PjrwoBSa336tIqTd8w'
+    const awsApiUrl = process.env.AWS_DEVICE_API_URL
+    const awsApiKey = process.env.AWS_DEVICE_API_KEY
+    if (!awsApiUrl || !awsApiKey) {
+      return res
+        .status(500)
+        .json({ error: 'AWS_DEVICE_API_URL and AWS_DEVICE_API_KEY must be set' })
+    }
 
     const response = await fetch(`${awsApiUrl}/device/config/${serial}`, {
       method: 'PUT',

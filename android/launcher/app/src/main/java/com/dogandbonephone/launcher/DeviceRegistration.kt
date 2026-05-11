@@ -15,15 +15,24 @@ import java.net.URL
  */
 object DeviceRegistration {
 
-    private const val API_URL = "https://9ces4tqpq8.execute-api.eu-west-2.amazonaws.com/dev"
-    private const val API_KEY = "ACmh8yUtjE6mxVuRKMOYG7PjrwoBSa336tIqTd8w"
+    private val API_URL = BuildConfig.AWS_DEVICE_API_URL
+    private val API_KEY = BuildConfig.AWS_DEVICE_API_KEY
     private const val TAG = "DogAndBone"
+
+    private fun isConfigured(): Boolean {
+        if (API_URL.isBlank() || API_KEY.isBlank()) {
+            Log.w(TAG, "Device API not configured — set AWS_DEVICE_API_URL and AWS_DEVICE_API_KEY in local.properties")
+            return false
+        }
+        return true
+    }
 
     /**
      * Register this device with the backend
      * Call this on first launch or periodically
      */
     suspend fun registerDevice(context: Context, config: AppConfig) {
+        if (!isConfigured()) return
         withContext(Dispatchers.IO) {
             try {
                 val serial = getDeviceSerial()
@@ -65,6 +74,7 @@ object DeviceRegistration {
      * Returns new config if available, null if no updates
      */
     suspend fun checkForConfigUpdates(context: Context): String? {
+        if (!isConfigured()) return null
         return withContext(Dispatchers.IO) {
             try {
                 val serial = getDeviceSerial()

@@ -1,0 +1,11 @@
+# Copy this file to `local.properties` (which is gitignored) and fill in the real values.
+#
+# Android SDK location (Android Studio writes this automatically on first open)
+sdk.dir=/path/to/your/Android/sdk
+
+# Device-tracking API — embedded into the release APK at build time.
+# Get values from AWS: API Gateway → dog-and-bone-device-mgmt-<env> → Stages / API Keys
+# These MUST be filled in for the launcher's phone-home and remote-config features to work.
+# Leave empty to build a launcher that skips registration (useful for dev builds).
+AWS_DEVICE_API_URL=https://your-api-gateway-url.execute-api.eu-west-2.amazonaws.com/dev
+AWS_DEVICE_API_KEY=your_aws_device_api_key_here

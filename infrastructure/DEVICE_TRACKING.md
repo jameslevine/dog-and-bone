@@ -289,7 +289,7 @@ Add to `admin-server/.env`:
 AWS_DEVICE_API_URL=https://abc123.execute-api.eu-west-2.amazonaws.com/dev
 AWS_DEVICE_API_KEY=your-api-key-here
 NETLIFY_URL=http://localhost:8888
-ADMIN_SECRET=886e7b2a7e3523a84b45f177c0a29a
+ADMIN_SECRET=your_admin_secret_here
 ```
 
 ---
@@ -357,3 +357,70 @@ Scales automatically with device count.
 6. **Ship phones** with auto-registration!
 
 This gives you complete visibility and control over all deployed devices! 🚀
+
+---
+
+## API Key Rotation Runbook
+
+The `AWS_DEVICE_API_KEY` is embedded into the launcher APK at build time (per [ADR-011](../docs/DECISIONS.md#adr-011-api-key-auth-for-device-endpoints-not-cognito)). Rotation therefore requires a coordinated change across AWS, the admin server, the launcher build, and any already-provisioned devices.
+
+### When to rotate
+
+- **Immediately** if the key has leaked (committed to git, posted publicly, shared over email/chat)
+- **Periodically** — every 6–12 months as baseline hygiene
+- After off-boarding anyone with access to `local.properties` or the admin-server `.env`
+
+### Rotation procedure
+
+1. **Create the new key** in AWS Console
+   - API Gateway → APIs → `dog-and-bone-device-api-<env>` → **API Keys** → Create
+   - Copy the key value immediately — it's not shown again
+   - Open the **Usage Plan** (`dog-and-bone-device-usage-<env>`) and associate the new key with it
+2. **Smoke test** the new key before touching anything that depends on the old one
+   ```bash
+   curl -H "x-api-key: <NEW_KEY>" https://<api-id>.execute-api.eu-west-2.amazonaws.com/<env>/devices
+   ```
+   Expect HTTP 200 with a JSON body. If 403, the key is not yet bound to the Usage Plan.
+3. **Update local developer environments**
+   - Edit `android/launcher/local.properties` → replace `AWS_DEVICE_API_KEY`
+   - Edit the operator's `.env` for `admin-server/` → replace `AWS_DEVICE_API_KEY`
+4. **Update Netlify environment variables** (if any server-side code uses the key — currently none, but guard against drift)
+   - Netlify dashboard → Site settings → Environment variables → `AWS_DEVICE_API_KEY`
+5. **Rebuild + re-sign the launcher APK**
+   ```bash
+   cd android/launcher
+   ./gradlew clean assembleRelease
+   # then sign with the production keystore via scripts/sign-release.sh
+   ```
+   Confirm the new APK's `versionCode` is bumped so already-deployed devices treat it as an update.
+6. **Redistribute the APK** to provisioned devices
+   - For devices still on-hand: reflash via the admin-server's setup flow
+   - For devices in the field: there is no OTA today — rotation requires either a courier return, a remote management tool, or accepting that older APKs will continue using the old key until the device is next touched
+7. **Disable the old key in AWS**
+   - Only after you've confirmed every updated client works with the new key
+   - API Gateway → API Keys → old key → **Disable** (keep for 24h so you can re-enable if something breaks), then **Delete**
+8. **Verify** — in AWS CloudWatch, check that there are no more `Forbidden` errors on the API and no requests using the old key's identifier
+
+### If the old key was in git history
+
+1. Confirm scope — is the repo private? Who has access?
+2. Assume the key is compromised even if repo access is tight; rotate anyway (steps above)
+3. Optional — scrub history with `git filter-repo`:
+   ```bash
+   # One-time install
+   brew install git-filter-repo
+
+   # From a fresh clone (filter-repo refuses to run in a dirty repo)
+   git clone <remote> dog-and-bone-scrub && cd dog-and-bone-scrub
+   echo 'ACmh8yUtjE6mxVuRKMOYG7PjrwoBSa336tIqTd8w==>***REDACTED***' > /tmp/replacements.txt
+   git filter-repo --replace-text /tmp/replacements.txt
+   git push --force-with-lease origin main
+   ```
+   This rewrites every commit that contained the literal. Force-push invalidates every collaborator's local clone — they must re-clone. Do not do this unless the value of scrubbing outweighs the disruption.
+
+### What NOT to do
+
+- Don't commit the new key — it lives only in `local.properties` (gitignored) and AWS
+- Don't skip the smoke test in step 2 — binding a new key to the Usage Plan is easy to forget
+- Don't delete the old key before confirming the new one works end-to-end
+- Don't paste keys into Slack, email, or chat — use 1Password or similar

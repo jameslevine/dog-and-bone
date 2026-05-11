@@ -3,6 +3,17 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+// Load the device-tracking API URL + key from local.properties (gitignored) or env vars.
+// Falls back to empty strings so `./gradlew build` doesn't fail in CI; the launcher will
+// log an error and skip registration if the values are blank at runtime.
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localProps.load(new FileInputStream(localPropsFile))
+}
+def awsDeviceApiUrl = localProps.getProperty('AWS_DEVICE_API_URL') ?: System.getenv('AWS_DEVICE_API_URL') ?: ''
+def awsDeviceApiKey = localProps.getProperty('AWS_DEVICE_API_KEY') ?: System.getenv('AWS_DEVICE_API_KEY') ?: ''
+
 android {
     namespace 'com.dogandbonephone.launcher'
     compileSdk 34
@@ -15,6 +26,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "AWS_DEVICE_API_URL", "\"${awsDeviceApiUrl}\""
+        buildConfigField "String", "AWS_DEVICE_API_KEY", "\"${awsDeviceApiKey}\""
     }
 
     buildTypes {
@@ -26,6 +40,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     compileOptions {
