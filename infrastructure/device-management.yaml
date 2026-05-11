@@ -73,6 +73,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub dog-and-bone-register-device-${Environment}
+      CodeUri: functions/register-device/
       Handler: index.handler
       Runtime: nodejs20.x
       MemorySize: 256
@@ -93,45 +94,16 @@ Resources:
             Path: /device/register
             Method: POST
             RestApiId: !Ref DeviceApi
-      InlineCode: |
-        import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-        import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb'
-
-        const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}))
-
-        export const handler = async (event) => {
-          const body = JSON.parse(event.body || '{}')
-          const { deviceSerial, orderId, profileId, appList, launcherVersion } = body
-
-          if (!deviceSerial) {
-            return {
-              statusCode: 400,
-              body: JSON.stringify({ error: 'deviceSerial required' }),
-            }
-          }
-
-          const timestamp = new Date().toISOString()
-
-          await ddb.send(new PutCommand({
-            TableName: process.env.DEVICE_TABLE,
-            Item: {
-              deviceSerial,
-              orderId: orderId || 'unknown',
-              profileId: profileId || 'unknown',
-              appList: appList || [],
-              launcherVersion: launcherVersion || '1.0.0',
-              firstSeen: timestamp,
-              lastSeen: timestamp,
-              status: 'active',
-              configVersion: 1,
-            },
-          }))
-
-          return {
-            statusCode: 200,
-            body: JSON.stringify({ success: true, deviceSerial }),
-          }
-        }
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - index.mjs
+        External:
+          - '@aws-sdk/*'
 
   # ===== Lambda Function: Get Device Config =====
   GetConfigFunction:
