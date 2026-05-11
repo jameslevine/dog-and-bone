@@ -13,9 +13,9 @@ describe('Logo', () => {
     expect(screen.queryByText('dog & bone')).not.toBeInTheDocument()
   })
 
-  it('renders the SVG icon', () => {
-    const { container } = render(<Logo />)
-    expect(container.querySelector('svg')).toBeInTheDocument()
+  it('renders the logo image', () => {
+    render(<Logo />)
+    expect(screen.getByAltText('Dog and Bone')).toBeInTheDocument()
   })
 
   it('applies custom className', () => {

@@ -19,8 +19,9 @@ describe('AffiliatePage', () => {
         <AffiliatePage />
       </MemoryRouter>,
     )
-    expect(screen.getByText('10%')).toBeInTheDocument()
-    expect(screen.getByText('30 days')).toBeInTheDocument()
+    expect(screen.getAllByText('10%').length).toBeGreaterThan(0)
+    expect(screen.getByText('£149')).toBeInTheDocument()
+    expect(screen.getByText('Minimum payout')).toBeInTheDocument()
   })
 
   it('renders the How it works section', () => {

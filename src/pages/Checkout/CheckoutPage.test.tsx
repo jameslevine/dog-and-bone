@@ -107,6 +107,55 @@ describe('CheckoutPage', () => {
     fetchSpy.mockRestore()
   })
 
+  it('includes senior contacts in the checkout payload for senior profile', async () => {
+    useCartStore.setState({ itemCount: 1, profileId: 'senior' })
+    useCustomizationStore.setState({
+      profileId: 'senior',
+      selectedAppIds: ['phone'],
+      seniorContacts: [
+        { name: 'Jane', phone: '07700900000' },
+        { name: '', phone: '' }, // Should be filtered out
+      ],
+    })
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ url: 'https://stripe.com/checkout' }),
+    } as Response)
+
+    renderCheckoutPage()
+    fireEvent.click(screen.getByRole('button', { name: /Pay Now/i }))
+
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalled()
+    })
+    const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)
+    expect(body.seniorContacts).toEqual([{ name: 'Jane', phone: '07700900000' }])
+    fetchSpy.mockRestore()
+  })
+
+  it('includes family emergency contact for family profile', async () => {
+    useCartStore.setState({ itemCount: 1, profileId: 'family' })
+    useCustomizationStore.setState({
+      profileId: 'family',
+      selectedAppIds: ['phone'],
+      familyEmergencyContact: { name: 'Mum', phone: '07700900001' },
+    })
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ url: 'https://stripe.com/checkout' }),
+    } as Response)
+
+    renderCheckoutPage()
+    fireEvent.click(screen.getByRole('button', { name: /Pay Now/i }))
+
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalled()
+    })
+    const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)
+    expect(body.familyEmergencyContact).toEqual({ name: 'Mum', phone: '07700900001' })
+    fetchSpy.mockRestore()
+  })
+
   it('shows error message on payment failure', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: false,

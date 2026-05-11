@@ -16,10 +16,20 @@ vi.mock('@/services/blog', () => {
     coverImageSlug: 'blog-digital-detox',
     Component: () => <p>Blog post body content</p>,
   }
+  const unknownCategoryPost = {
+    ...post,
+    slug: 'unknown-category',
+    category: 'Made Up Category',
+    coverImageSlug: 'does-not-exist',
+  }
 
   return {
-    blogPosts: [post],
-    getPostBySlug: (slug: string) => (slug === 'test-post' ? post : undefined),
+    blogPosts: [post, unknownCategoryPost],
+    getPostBySlug: (slug: string) => {
+      if (slug === 'test-post') return post
+      if (slug === 'unknown-category') return unknownCategoryPost
+      return undefined
+    },
   }
 })
 
@@ -80,5 +90,39 @@ describe('BlogPostPage', () => {
     )
     const backLinks = screen.getAllByRole('link', { name: /back to blog/i })
     expect(backLinks.length).toBeGreaterThan(0)
+  })
+
+  it('falls back to the default cover image for an unknown slug', () => {
+    render(
+      <MemoryRouter initialEntries={['/blog/unknown-category']}>
+        <Routes>
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    const coverImage = screen.getByAltText('Test Blog Post Title')
+    expect(coverImage).toHaveAttribute('src', '/images/ai/about-hero.png')
+  })
+
+  it('renders an unknown category without crashing', () => {
+    render(
+      <MemoryRouter initialEntries={['/blog/unknown-category']}>
+        <Routes>
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('Made Up Category')).toBeInTheDocument()
+  })
+
+  it('renders the post date in long format', () => {
+    render(
+      <MemoryRouter initialEntries={['/blog/test-post']}>
+        <Routes>
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByText(/15 March 2024/)).toBeInTheDocument()
   })
 })

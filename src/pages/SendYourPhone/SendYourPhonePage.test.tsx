@@ -50,6 +50,19 @@ describe('SendYourPhonePage', () => {
     expect(screen.getByRole('button', { name: /Submit Request/i })).toBeInTheDocument()
   })
 
+  it('shows validation errors when fields are touched with invalid values', async () => {
+    render(<SendYourPhonePage />)
+    const name = screen.getByLabelText(/Your name/i)
+    const email = screen.getByLabelText(/Email address/i)
+    fireEvent.change(email, { target: { value: 'not-an-email' } })
+    fireEvent.blur(email)
+    fireEvent.blur(name)
+    await waitFor(() => {
+      expect(screen.getByText(/Please enter a valid email address/i)).toBeInTheDocument()
+    })
+    expect(screen.getByText(/Please enter your name/i)).toBeInTheDocument()
+  })
+
   it('submits form and shows success state', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: true,

@@ -27,6 +27,17 @@ vi.mock('@/services/blog', () => ({
       coverImageSlug: 'blog-senior-phone',
       Component: () => <p>Content two</p>,
     },
+    {
+      slug: 'unknown-cover',
+      title: 'Unknown Cover Post',
+      date: '2024-03-01',
+      author: 'Dog and Bone',
+      excerpt: 'Post with unknown cover + category',
+      category: 'Invented Category',
+      readTime: '2 min read',
+      coverImageSlug: 'totally-unknown-slug',
+      Component: () => <p>Content three</p>,
+    },
   ],
   getPostBySlug: vi.fn((slug: string) => {
     const posts = [
@@ -111,5 +122,25 @@ describe('BlogListPage', () => {
       </MemoryRouter>,
     )
     expect(screen.getByText('Ready to simplify your phone?')).toBeInTheDocument()
+  })
+
+  it('uses the default cover image for posts with an unknown coverImageSlug', () => {
+    render(
+      <MemoryRouter>
+        <BlogListPage />
+      </MemoryRouter>,
+    )
+    const img = screen.getByAltText('Unknown Cover Post')
+    expect(img).toHaveAttribute('src', '/images/ai/about-hero.png')
+  })
+
+  it('renders an unknown category with the default badge colour', () => {
+    render(
+      <MemoryRouter>
+        <BlogListPage />
+      </MemoryRouter>,
+    )
+    // Invented Category has no entry in CATEGORY_COLORS — page falls back to the default
+    expect(screen.getByText('Invented Category')).toBeInTheDocument()
   })
 })

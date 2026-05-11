@@ -24,12 +24,14 @@ describe('HeroSection', () => {
     expect(screen.getByRole('button', { name: /Shop Now/i })).toBeInTheDocument()
   })
 
-  it('renders the Send Your Phone CTA', () => {
-    render(
+  it('renders the hero background video', () => {
+    const { container } = render(
       <MemoryRouter>
         <HeroSection />
       </MemoryRouter>,
     )
-    expect(screen.getByRole('button', { name: /Send Your Phone/i })).toBeInTheDocument()
+    const video = container.querySelector('video')
+    expect(video).toBeInTheDocument()
+    expect(video).toHaveAttribute('src', '/videos/hero-reel.mp4')
   })
 })

@@ -28,9 +28,10 @@ describe('PROFILES', () => {
     })
   })
 
-  it('marks family profile as popular', () => {
-    const family = PROFILES.find((p) => p.id === 'family')
-    expect(family?.popular).toBe(true)
+  it('marks exactly one profile as popular', () => {
+    const popular = PROFILES.filter((p) => p.popular)
+    expect(popular).toHaveLength(1)
+    expect(popular[0]?.id).toBe('essential')
   })
 })
 
