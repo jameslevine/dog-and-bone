@@ -32,8 +32,8 @@ describe('SetupGuidePage', () => {
 
   it('renders navigation sections', () => {
     render(<SetupGuidePage />)
-    expect(screen.getAllByText('Prerequisites').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Troubleshooting').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Prerequisites/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Troubleshooting/).length).toBeGreaterThan(0)
   })
 
   it('renders code blocks', () => {
@@ -45,7 +45,7 @@ describe('SetupGuidePage', () => {
 
   it('renders all sections', () => {
     render(<SetupGuidePage />)
-    expect(screen.getAllByText('Connecting Your Device').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Connecting Your Device/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Enabling Developer Mode/i).length).toBeGreaterThan(0)
   })
 
