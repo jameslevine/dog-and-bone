@@ -8,6 +8,17 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      'context/**',
+      'admin-server/**',
+      'infrastructure/**',
+      'android/**',
+      '.idea/**',
+      '.git/**',
+      '.cache/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -21,14 +32,14 @@ export default defineConfig({
         'src/vite-env.d.ts',
         'src/content/**',
         'src/types/**',
-        'src/styles/**',
+        'src/globals.css',
         'scripts/**',
         'android/**',
         // Barrel re-export files (no logic to test)
         '**/index.ts',
         '**/index.tsx',
         // Router config (no testable logic beyond imports)
-        'src/router/**',
+        'src/routes.tsx',
         // App.tsx (root component wiring)
         'src/App.tsx',
         // blog.ts uses import.meta.glob which requires Vite — tested via mocks in page tests

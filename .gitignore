@@ -41,3 +41,9 @@ android/launcher/local.properties
 # Local Netlify folder
 .netlify
 context/
+
+# AWS SAM build output
+infrastructure/.aws-sam/
+
+# Deno lockfile (not used by this project — Netlify Edge artifact)
+deno.lock
