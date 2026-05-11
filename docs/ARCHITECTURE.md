@@ -3,37 +3,25 @@
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Customer Browser                      │
-│  React SPA (Vite build, served from Netlify CDN)        │
-└───────────────────┬─────────────────────────────────────┘
-                    │ HTTPS
-┌───────────────────▼─────────────────────────────────────┐
-│                    Netlify                               │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │           Static Files (CDN Edge)               │    │
-│  │  HTML + JS + CSS + AI images/videos             │    │
-│  └─────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │           Netlify Functions (Lambda)            │    │
-│  │  create-checkout-session                        │    │
-│  │  stripe-webhook                                 │    │
-│  │  generate-setup-script (admin-protected)        │    │
-│  └──────────────────┬──────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │           Netlify Forms                         │    │
-│  │  Send Your Phone booking form                   │    │
-│  └─────────────────────────────────────────────────┘    │
-└───────────────────┬─────────────────────────────────────┘
-                    │
-         ┌──────────┴──────────┐
-         │                     │
-┌────────▼────────┐   ┌────────▼────────┐
-│     Stripe      │   │   Rewardful     │
-│  Checkout/      │   │  Affiliate      │
-│  Products/      │   │  tracking       │
-│  Webhooks       │   └─────────────────┘
-└─────────────────┘
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│ Customer Browser │     │ Android Device   │     │ Operator Laptop  │
+│  (React SPA)     │     │ (Dog & Bone      │     │ (admin-server    │
+│                  │     │  launcher)       │     │  localhost:3000) │
+└────────┬─────────┘     └────────┬─────────┘     └────────┬─────────┘
+         │ HTTPS                  │ HTTPS + API key        │ ADB (USB) + HTTPS
+         │                        │                        │
+┌────────▼─────────┐     ┌────────▼─────────────────────────▼────────┐
+│     Netlify      │     │       AWS (eu-west-2)                      │
+│  Static CDN +    │     │  API Gateway ──► 4 Lambdas ──► DynamoDB    │
+│  Functions +     │     │                           └──► S3 configs  │
+│  Forms           │     │  (SAM stack: dog-and-bone-device-mgmt)     │
+└────────┬─────────┘     └────────────────────────────────────────────┘
+         │
+     ┌───┴────┬──────────────┐
+     ▼        ▼              ▼
+  Stripe  Rewardful    Amazon Bedrock
+ Checkout affiliate   (Nova Canvas/Reel —
+ Webhooks tracking     one-off asset build)
 ```
 
 ## Component Breakdown
@@ -77,6 +65,34 @@
 - Accepts: `?orderId=cs_xxx`
 - Retrieves session from Stripe, reads `metadata.apps` + `metadata.profileId`
 - Returns dynamically generated `.sh` file
+
+**`list-orders`**
+- Admin-protected
+- Fetches recent Stripe Checkout Sessions for the local admin dashboard
+
+### Local Admin Server (`admin-server/`)
+
+Runs on operator laptop at `localhost:3000` — **not deployed**. ADB requires USB, so this must live locally. Express app that:
+
+- Detects connected Android devices via `adb devices`
+- Pulls recent orders from the Stripe API via the `list-orders` Netlify Function
+- Triggers `generate-setup-script` + runs the returned `.sh` against the connected device
+- Streams progress/output back to the operator UI
+
+### AWS Device-Tracking Backend (`infrastructure/`)
+
+Deployed via AWS SAM as stack `dog-and-bone-device-mgmt-{env}` in `eu-west-2`. Enables phone-home telemetry and remote configuration pushes after a phone has shipped.
+
+- **DynamoDB** `DevicesTable` — device inventory keyed by `deviceSerial`; stores `orderId`, `profileId`, `appList`, `launcherVersion`, `firstSeen`, `lastSeen`, `configVersion`
+- **S3** `ConfigBucket` — per-device config JSON at `devices/{serial}/app-config.json`
+- **API Gateway** — REST, API-key authenticated, 4 endpoints:
+  - `POST /device/register` → `register-device` Lambda
+  - `GET /device/{serial}/config` → `get-config` Lambda (falls back to 404 on `NoSuchKey`)
+  - `GET /devices` → `list-devices` Lambda
+  - `PUT /device/{serial}/config` → `update-config` Lambda (writes S3, bumps `configVersion` in DDB)
+- **Lambdas** — all Node.js 20, built with esbuild via `CodeUri` in the SAM template, validate env vars at cold start, wrap AWS SDK calls in try/catch
+
+Estimated cost ~£3/month. Integration guide: [infrastructure/DEVICE_TRACKING.md](../infrastructure/DEVICE_TRACKING.md).
 
 ### AI Asset Generation
 

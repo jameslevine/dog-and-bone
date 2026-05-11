@@ -68,6 +68,18 @@ Unit and integration tests, 90% coverage threshold, MSW mocks.
 
 Production build verified clean, `.env.example` complete, operator deployment guide written.
 
+### Phase 13 — Local Admin Server 🟢
+
+Replaced the public admin dashboard with a local Node/Express server (`admin-server/`) that detects connected Android devices via ADB, fetches Stripe orders live, and orchestrates the generate-setup-script flow. Runs on `localhost:3000` only — ADB requires USB access.
+
+### Phase 14 — AWS Device Tracking & Remote Config 🟢
+
+SAM-deployed device-management stack: API Gateway (API-key authenticated) + DynamoDB (`DevicesTable`) + S3 (`ConfigBucket`) + 4 Lambdas (register-device, list-devices, get-config, update-config). Enables devices to phone-home on boot and pull updated app configuration remotely. Estimated cost ~£3/month. Infrastructure in `infrastructure/device-management.yaml`, Lambda sources in `infrastructure/functions/`, integration guide in `infrastructure/DEVICE_TRACKING.md`.
+
+### Phase 15 — Code Hygiene Pass (2026-05-11) 🟢
+
+Audit + cleanup: fixed 5 flaky tests, removed stray `console.log` from stripe-webhook, flattened `src/router/` and `src/styles/`, split `SetupGuidePage` (422 → 90 lines) and `SendYourPhonePage` (356 → 97 lines), extracted `CodeBlock` and `InlineCode` atoms, hardened 4 device-tracking Lambdas with try/catch + env validation + consistent DocumentClient usage, sanitized leaked AWS API key from `.env.example`.
+
 ---
 
 ## Feature List
@@ -113,6 +125,10 @@ Production build verified clean, `.env.example` complete, operator deployment gu
 | Android launcher build system | P0 | 🟢 Complete |
 | Android launcher signed APK | P0 | 🟢 Complete |
 | Keystore backup in 1Password | P0 | 🟢 Complete |
+| Local admin server (ADB + Stripe orders) | P0 | 🟢 Complete |
+| AWS SAM device tracking (DynamoDB + 4 Lambdas + S3) | P0 | 🟢 Complete |
+| AWS API Gateway with API-key auth | P0 | 🟢 Complete |
+| Code hygiene pass (2026-05-11) | P1 | 🟢 Complete |
 
 ---
 
@@ -122,9 +138,15 @@ These items are not blockers for launch but are planned for after the first live
 
 | Task | Priority | Notes |
 | --- | --- | --- |
-| Google Analytics / Plausible | P2 | Track page views and conversion funnel |
-| Generate AI images via Bedrock | P1 | Run `npm run generate:ai-assets` once AWS configured |
-| Build and sideload Android launcher APK | P0 | Required for per-order phone setup |
+| Rotate leaked AWS_DEVICE_API_KEY | P0 | API Gateway → API Keys → delete old, create new, update Usage Plan |
+| Commit `infrastructure/functions/*` + sanitised `.env.example` | P0 | Single `infra:` commit |
 | Switch Stripe to live mode | P0 | Follow Section 6 of `userInstructions/DEPLOYMENT.md` |
+| Wire launcher → device-tracking API | P1 | `POST /device/register` on boot + polling `GET /device/config` — see `infrastructure/DEVICE_TRACKING.md` |
+| Test signed launcher APK on physical A12 | P0 | Carry-over from 2026-04-29 |
+| Extend admin-server with list-devices + update-config | P1 | Push remote-config changes from the local dashboard |
+| Route-based code splitting | P2 | Reduce 626 KB JS chunk |
+| Add tests for WiFiForm, ContactsForm, FAQPage | P2 | Currently untested |
 | Email confirmation on order | P1 | Trigger via stripe-webhook when checkout.session.completed |
 | Customer order portal | P2 | Let customers track their order status |
+| Google Analytics / Plausible | P2 | Track page views and conversion funnel |
+| Generate AI videos via Bedrock | P2 | Run `npm run generate:ai-assets` |
