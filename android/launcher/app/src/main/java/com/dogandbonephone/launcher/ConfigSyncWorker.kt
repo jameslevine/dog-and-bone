@@ -30,7 +30,7 @@ class ConfigSyncWorker(
                 )
                 file.writeText(newConfig)
 
-                Log.d("DogAndBone", "Remote config updated - will apply on next launcher restart")
+                Log.d("DogAndBone", "Remote config updated - applies on next MainActivity.onResume")
                 Result.success()
             } else {
                 // No updates available

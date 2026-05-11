@@ -114,6 +114,15 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         hideSystemUI()
+
+        // Re-read config on every resume so remote-config updates written by
+        // ConfigSyncWorker become visible without requiring a restart.
+        val updated = AppConfig.load(this)
+        if (updated != config) {
+            config = updated
+            if (config.largeText) applyLargeTextMode()
+        }
+
         setupAppGrid()
 
         @Suppress("DEPRECATION")
