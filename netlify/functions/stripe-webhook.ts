@@ -39,11 +39,12 @@ export const handler: Handler = async (event: HandlerEvent) => {
   switch (stripeEvent.type) {
     case 'checkout.session.completed': {
       const session = stripeEvent.data.object as Stripe.Checkout.Session
-      console.log('Order completed:', {
+      // Load-bearing: this log is how the operator sees a new order in Netlify Function logs
+      // for manual fulfilment. Do not remove until automated fulfilment lands.
+      console.info('Order completed:', {
         sessionId: session.id,
         profileId: session.metadata?.profileId,
         apps: session.metadata?.apps,
-        addons: session.metadata?.addons,
         customerEmail: session.customer_details?.email,
         amountTotal: session.amount_total,
       })
@@ -61,7 +62,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }
 
     default:
-      console.log(`Unhandled event type: ${stripeEvent.type}`)
+      break
   }
 
   return {
