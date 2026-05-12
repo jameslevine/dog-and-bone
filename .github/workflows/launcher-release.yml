@@ -1,0 +1,200 @@
+name: Launcher release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+'
+
+# Lock concurrency per tag. Stops duplicate runs if a tag is accidentally
+# retagged/repushed while a build is in flight.
+concurrency:
+  group: launcher-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  # Needed so softprops/action-gh-release can create the GitHub Release.
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout (with full history for changelog)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Derive version numbers from tag
+        id: version
+        run: |
+          tag="${GITHUB_REF_NAME}"             # e.g. v1.2
+          name="${tag#v}"                       # 1.2
+          major="${name%%.*}"
+          minor="${name##*.}"
+          code=$(( major * 100 + minor ))
+          echo "name=${name}"   >> "$GITHUB_OUTPUT"
+          echo "code=${code}"   >> "$GITHUB_OUTPUT"
+          echo "Derived: versionName=${name} versionCode=${code}"
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK (build-tools 34.0.0)
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'build-tools;34.0.0 platforms;android-34 platform-tools'
+
+      - name: Restore signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.LAUNCHER_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.LAUNCHER_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.LAUNCHER_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.LAUNCHER_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          printf '%s' "${KEYSTORE_BASE64}" | base64 -d > android/dog-and-bone-release.keystore
+          cat > android/keystore.properties <<EOF
+          storeFile=dog-and-bone-release.keystore
+          storePassword=${STORE_PASSWORD}
+          keyAlias=${KEY_ALIAS}
+          keyPassword=${KEY_PASSWORD}
+          EOF
+
+      - name: Write launcher local.properties (SDK path + BuildConfig secrets)
+        env:
+          AWS_DEVICE_API_URL: ${{ secrets.AWS_DEVICE_API_URL }}
+          AWS_DEVICE_API_KEY: ${{ secrets.AWS_DEVICE_API_KEY }}
+        run: |
+          set -euo pipefail
+          cat > android/launcher/local.properties <<EOF
+          sdk.dir=${ANDROID_HOME}
+          AWS_DEVICE_API_URL=${AWS_DEVICE_API_URL}
+          AWS_DEVICE_API_KEY=${AWS_DEVICE_API_KEY}
+          EOF
+
+      - name: Stamp versionCode + versionName from tag
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          set -euo pipefail
+          sed -i -E "s/versionCode [0-9]+/versionCode ${VERSION_CODE}/" android/launcher/app/build.gradle
+          sed -i -E "s/versionName \"[^\"]+\"/versionName \"${VERSION_NAME}\"/" android/launcher/app/build.gradle
+          echo "Stamped build.gradle:"
+          grep -E 'versionCode |versionName ' android/launcher/app/build.gradle
+
+      - name: Build unsigned release APK
+        run: bash android/build-launcher.sh
+
+      - name: Sign release APK
+        run: bash android/sign-release.sh
+
+      - name: Compute SHA-256 of signed APK
+        id: sha
+        run: |
+          set -euo pipefail
+          apk=android/build-output/dog-and-bone-launcher-release-signed.apk
+          hash=$(sha256sum "$apk" | awk '{print $1}')
+          size=$(stat -c '%s' "$apk")
+          echo "sha256=${hash}"  >> "$GITHUB_OUTPUT"
+          echo "size=${size}"    >> "$GITHUB_OUTPUT"
+          echo "SHA-256: ${hash}"
+          echo "Size: ${size} bytes"
+
+      - name: Generate changelog
+        id: changelog
+        env:
+          CURRENT_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # Previous tag matching the same vMAJOR.MINOR shape; empty if this is the first.
+          prev_tag=$(git tag --list --sort=-v:refname 'v[0-9]*.[0-9]*' \
+                     | grep -vF "${CURRENT_TAG}" | head -n 1 || true)
+          if [ -n "$prev_tag" ]; then
+            echo "Previous tag: ${prev_tag}"
+            body=$(git log --pretty=format:'- %s' "${prev_tag}..${CURRENT_TAG}")
+          else
+            body="- Initial release"
+          fi
+          # Escape for JSON / multi-line outputs.
+          {
+            echo 'notes<<CHANGELOG_EOF'
+            echo "$body"
+            echo 'CHANGELOG_EOF'
+          } >> "$GITHUB_OUTPUT"
+          echo "--- changelog ---"
+          echo "$body"
+
+      - name: Write release manifest (latest.json)
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+          SHA256: ${{ steps.sha.outputs.sha256 }}
+          NOTES: ${{ steps.changelog.outputs.notes }}
+        run: |
+          set -euo pipefail
+          published_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          # Use jq to avoid hand-rolling JSON escaping for the release notes.
+          jq -n \
+            --argjson versionCode "${VERSION_CODE}" \
+            --arg versionName "${VERSION_NAME}" \
+            --arg apkKey "releases/dog-and-bone-launcher-${VERSION_NAME}.apk" \
+            --arg sha256 "${SHA256}" \
+            --arg releaseNotes "${NOTES}" \
+            --arg publishedAt "${published_at}" \
+            '{versionCode: $versionCode, versionName: $versionName, apkKey: $apkKey, sha256: $sha256, releaseNotes: $releaseNotes, publishedAt: $publishedAt}' \
+            > /tmp/latest.json
+          echo "--- latest.json ---"
+          cat /tmp/latest.json
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Upload APK + manifest to S3
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+        run: |
+          set -euo pipefail
+          bucket="dog-and-bone-configs-dev"
+          apk=android/build-output/dog-and-bone-launcher-release-signed.apk
+          aws s3 cp "$apk" "s3://${bucket}/releases/dog-and-bone-launcher-${VERSION_NAME}.apk" \
+            --content-type application/vnd.android.package-archive
+          aws s3 cp /tmp/latest.json "s3://${bucket}/releases/latest.json" \
+            --content-type application/json
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Launcher ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.notes }}
+          files: android/build-output/dog-and-bone-launcher-release-signed.apk
+
+      - name: Job summary
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+          SHA256: ${{ steps.sha.outputs.sha256 }}
+          SIZE: ${{ steps.sha.outputs.size }}
+        run: |
+          {
+            echo "## Launcher release ${GITHUB_REF_NAME}"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| versionName | ${VERSION_NAME} |"
+            echo "| versionCode | ${VERSION_CODE} |"
+            echo "| APK size | ${SIZE} bytes |"
+            echo "| SHA-256 | \`${SHA256}\` |"
+            echo "| Manifest | \`s3://dog-and-bone-configs-dev/releases/latest.json\` |"
+            echo "| APK key | \`releases/dog-and-bone-launcher-${VERSION_NAME}.apk\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
