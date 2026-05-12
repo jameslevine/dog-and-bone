@@ -49,7 +49,7 @@ object DeviceRegistration {
                     put("orderId", "unknown") // Will be populated from setup script metadata later
                     put("profileId", config.profile)
                     put("appList", org.json.JSONArray(config.apps))
-                    put("launcherVersion", "1.0.0")
+                    put("launcherVersion", BuildConfig.VERSION_NAME)
                 }
 
                 connection.outputStream.use { os ->
