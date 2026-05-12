@@ -13,6 +13,7 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.lifecycle.lifecycleScope
@@ -89,10 +90,21 @@ class MainActivity : AppCompatActivity() {
             if (fetched != null) {
                 java.io.File(getExternalFilesDir(null), "app-config.json").writeText(fetched)
             }
+            // Check for launcher self-updates. If a newer manifest exists we refresh the
+            // banner immediately — otherwise the user would have to background+foreground
+            // the app (triggering onResume) before seeing it.
+            UpdateChecker.checkForUpdate(this@MainActivity)
+            refreshUpdateBanner()
         }
 
         // Schedule periodic config sync (every hour)
         scheduleConfigSync()
+
+        // Banner tap -> show install confirmation dialog
+        binding.updateBanner.setOnClickListener { showUpdateDialog() }
+
+        // Populate the version tag shown below the date
+        binding.versionTag.text = "v${BuildConfig.VERSION_NAME}"
     }
 
     // Config sync strategy:
@@ -143,9 +155,55 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupAppGrid()
+        refreshUpdateBanner()
 
         @Suppress("DEPRECATION")
         registerReceiver(systemDialogReceiver, IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+    }
+
+    private fun refreshUpdateBanner() {
+        val manifest = UpdateChecker.getPendingManifest(this)
+        if (manifest == null) {
+            binding.updateBanner.visibility = View.GONE
+        } else {
+            binding.updateBanner.visibility = View.VISIBLE
+            binding.updateBannerVersion.text = getString(
+                R.string.update_banner_version_format,
+                manifest.versionName,
+            )
+        }
+    }
+
+    private fun showUpdateDialog() {
+        val manifest = UpdateChecker.getPendingManifest(this) ?: return
+        val message = buildString {
+            append("Version ${manifest.versionName}")
+            if (manifest.releaseNotes.isNotBlank()) {
+                append("\n\n")
+                append(manifest.releaseNotes)
+            }
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.update_dialog_title)
+            .setMessage(message)
+            .setPositiveButton(R.string.update_dialog_install) { _, _ ->
+                startInstall(manifest)
+            }
+            .setNegativeButton(R.string.update_dialog_later, null)
+            .show()
+    }
+
+    private fun startInstall(manifest: UpdateChecker.ReleaseManifest) {
+        binding.updateBannerVersion.setText(R.string.update_downloading)
+        lifecycleScope.launch {
+            val success = UpdateChecker.downloadAndInstall(this@MainActivity, manifest)
+            if (!success) {
+                binding.updateBannerVersion.setText(R.string.update_failed)
+            }
+            // On success, InstallResultReceiver clears the pending manifest; the banner
+            // goes away on next onResume (which fires when the install finishes because
+            // the activity is recreated with the new APK).
+        }
     }
 
     override fun onPause() {

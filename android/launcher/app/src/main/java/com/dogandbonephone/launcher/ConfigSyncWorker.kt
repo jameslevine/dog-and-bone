@@ -31,12 +31,16 @@ class ConfigSyncWorker(
                 file.writeText(newConfig)
 
                 Log.d("DogAndBone", "Remote config updated - applies on next MainActivity.onResume")
-                Result.success()
             } else {
                 // No updates available
                 Log.d("DogAndBone", "No remote config updates")
-                Result.success()
             }
+
+            // Piggyback a launcher-update check. UpdateChecker persists any newer
+            // manifest to SharedPreferences; MainActivity.onResume renders the banner.
+            UpdateChecker.checkForUpdate(applicationContext)
+
+            Result.success()
         } catch (e: Exception) {
             Log.e("DogAndBone", "Config sync error", e)
             // Retry on failure (internet might be down)

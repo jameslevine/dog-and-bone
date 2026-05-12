@@ -8,6 +8,67 @@
     android:background="@color/brand_cream"
     tools:context=".MainActivity">
 
+    <!-- ===== Update-available banner (hidden by default) ===== -->
+    <!--
+        Shown when UpdateChecker has stashed a pending release manifest.
+        Tapping opens an AlertDialog with release notes + Install / Later.
+    -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/updateBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/brand_brown"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/updateBannerTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/update_banner_title"
+            android:textColor="@color/brand_cream"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/updateBannerAction" />
+
+        <TextView
+            android:id="@+id/updateBannerVersion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/brand_cream"
+            android:textSize="12sp"
+            android:alpha="0.85"
+            android:layout_marginTop="2dp"
+            app:layout_constraintTop_toBottomOf="@id/updateBannerTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/updateBannerAction"
+            tools:text="v1.1 available" />
+
+        <TextView
+            android:id="@+id/updateBannerAction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/update_banner_action"
+            android:textColor="@color/brand_cream"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <!-- ===== Top: clock and date ===== -->
     <LinearLayout
         android:id="@+id/clockContainer"
@@ -17,7 +78,7 @@
         android:gravity="center"
         android:paddingTop="32dp"
         android:paddingBottom="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/updateBanner"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -43,6 +104,17 @@
             android:textSize="16sp"
             android:textColor="@color/brand_brown"
             android:layout_marginTop="4dp" />
+
+        <!-- Version tag (populated from BuildConfig in MainActivity) -->
+        <TextView
+            android:id="@+id/versionTag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="@color/brand_brown"
+            android:alpha="0.5"
+            android:layout_marginTop="6dp"
+            tools:text="v1.1" />
 
     </LinearLayout>
 
