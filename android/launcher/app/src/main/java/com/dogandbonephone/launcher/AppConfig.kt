@@ -19,8 +19,18 @@ data class AppConfig(
     val pinEnabled: Boolean,
     val emergencyNumber: String,
     val largeText: Boolean = false,
+    /**
+     * How often ConfigSyncWorker runs. Clamped to [MIN_SYNC_INTERVAL_MIN, MAX_SYNC_INTERVAL_MIN]
+     * at parse time as defence-in-depth; Android's WorkManager itself enforces a 15-minute
+     * floor on PeriodicWorkRequest so values below [MIN_SYNC_INTERVAL_MIN] would be silently
+     * rounded up anyway.
+     */
+    val configSyncIntervalMinutes: Long = DEFAULT_SYNC_INTERVAL_MIN,
 ) {
     companion object {
+        const val DEFAULT_SYNC_INTERVAL_MIN = 60L
+        const val MIN_SYNC_INTERVAL_MIN = 15L
+        const val MAX_SYNC_INTERVAL_MIN = 1440L // 24h
 
         fun load(context: Context): AppConfig {
             // Try multiple config sources in priority order
@@ -93,6 +103,10 @@ data class AppConfig(
                 pinEnabled = obj.optBoolean("pinEnabled", false),
                 emergencyNumber = obj.optString("emergencyNumber", ""),
                 largeText = obj.optBoolean("largeText", false),
+                configSyncIntervalMinutes = obj.optLong(
+                    "configSyncIntervalMinutes",
+                    DEFAULT_SYNC_INTERVAL_MIN,
+                ).coerceIn(MIN_SYNC_INTERVAL_MIN, MAX_SYNC_INTERVAL_MIN),
             )
         }
     }

@@ -14,5 +14,6 @@
   "showEmergencyButton": false,
   "pinEnabled": false,
   "emergencyNumber": "",
-  "largeText": false
+  "largeText": false,
+  "configSyncIntervalMinutes": 60
 }

@@ -97,8 +97,8 @@ class MainActivity : AppCompatActivity() {
             refreshUpdateBanner()
         }
 
-        // Schedule periodic config sync (every hour)
-        scheduleConfigSync()
+        // Schedule periodic config sync (interval comes from AppConfig, default 60 min)
+        scheduleConfigSync(config.configSyncIntervalMinutes, ExistingPeriodicWorkPolicy.KEEP)
 
         // Banner tap -> show install confirmation dialog
         binding.updateBanner.setOnClickListener { showUpdateDialog() }
@@ -110,7 +110,10 @@ class MainActivity : AppCompatActivity() {
     // Config sync strategy:
     //   1. Cold-start fetch in onCreate() — pulls latest config within ~1s of launch
     //   2. onResume reload — picks up any config written to disk without a restart
-    //   3. This periodic worker — hourly background pull for long-lived sessions
+    //   3. This periodic worker — background pull at AppConfig.configSyncIntervalMinutes
+    //      (default 60 min). onResume also re-enqueues this worker with UPDATE policy
+    //      when the interval in the config changes, so an operator can remotely dial
+    //      the cadence up or down (bench device: 15 min, shipped device: 24 h).
     //
     // Testing note: `adb shell cmd jobscheduler run -f com.dogandbonephone.launcher <id>`
     // does NOT trigger the worker early. The -f flag overrides battery/connectivity
@@ -118,15 +121,18 @@ class MainActivity : AppCompatActivity() {
     // timestamp across cancel/re-enqueue. To test the worker path, either wait for
     // the natural hourly cycle, or invoke DeviceRegistration.checkForConfigUpdates()
     // directly (as onCreate already does).
-    private fun scheduleConfigSync() {
+    private fun scheduleConfigSync(
+        intervalMinutes: Long,
+        policy: ExistingPeriodicWorkPolicy,
+    ) {
         val syncWorkRequest = PeriodicWorkRequestBuilder<ConfigSyncWorker>(
-            1, TimeUnit.HOURS
+            intervalMinutes, TimeUnit.MINUTES
         ).build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "config-sync",
-            ExistingPeriodicWorkPolicy.KEEP,
-            syncWorkRequest
+            policy,
+            syncWorkRequest,
         )
     }
 
@@ -150,8 +156,16 @@ class MainActivity : AppCompatActivity() {
         // ConfigSyncWorker become visible without requiring a restart.
         val updated = AppConfig.load(this)
         if (updated != config) {
+            val intervalChanged = updated.configSyncIntervalMinutes != config.configSyncIntervalMinutes
             config = updated
             if (config.largeText) applyLargeTextMode()
+            if (intervalChanged) {
+                android.util.Log.d(
+                    "DogAndBone",
+                    "Config sync interval changed to ${config.configSyncIntervalMinutes} min — rescheduling worker",
+                )
+                scheduleConfigSync(config.configSyncIntervalMinutes, ExistingPeriodicWorkPolicy.UPDATE)
+            }
         }
 
         setupAppGrid()
