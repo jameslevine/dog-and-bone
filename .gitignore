@@ -50,3 +50,6 @@ deno.lock
 
 # Playwright MCP debug output
 .playwright-mcp/
+
+# tsx / ts-node transient build output (emitted by some configs)
+.scripts-dist/

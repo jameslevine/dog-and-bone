@@ -2,10 +2,10 @@
 
 ## 🔵 Current Task
 
-- **Task**: Code hygiene pass + doc refresh
-- **Started**: 2026-05-11
-- **Context**: Site has been live since 2026-04-29. Since then: admin-server rewrite, AWS device-tracking infrastructure (SAM + DynamoDB + 4 Lambdas + S3 + API Gateway). Docs were stale. Audit also surfaced 5 flaky tests, a leaked API key in `.env.example`, stray `console.log`s, 2 oversized pages, and inconsistent Lambda hygiene.
-- **Progress**: Sanitised `.env.example`, fixed 5 tests (vitest was double-counting via `context/` snapshot — excluded), removed `console.log`s, flattened `src/router/` and `src/styles/`, split `SetupGuidePage` (422→90 lines) and `SendYourPhonePage` (356→97 lines) with new `CodeBlock`/`InlineCode` atoms, hardened all 4 device-tracking Lambdas (try/catch, env-var validation, consistent DocumentClient usage), refreshed ROADMAP/ARCHITECTURE/DECISIONS. No git commits — all changes unstaged for review.
+- **Task**: CI/CD for launcher releases + PR checks for the customer site
+- **Started**: 2026-05-12
+- **Context**: Launcher releases were manual (edit build.gradle → build-launcher.sh → sign-release.sh → manual S3 upload → manual manifest). Keystore lived on one laptop. Customer site had no automated pre-merge checks.
+- **Progress**: Added `.github/workflows/launcher-release.yml` (tag-triggered, vMAJOR.MINOR, full build+sign+upload+GitHub Release pipeline), `.github/workflows/frontend-ci.yml` (lint/typecheck/test/build on PRs + main), and `docs/RELEASING_LAUNCHER.md` runbook. Eight secrets need to be set in GitHub Settings before the first release (keystore base64, keystore creds, AWS API URL/key, AWS IAM access keys). Netlify auto-deploy untouched — the new launcher workflow triggers on tags only, the frontend workflow is check-only.
 
 ## ✅ Completed Tasks
 
@@ -69,6 +69,11 @@
 | 2026-05-11 | Split SendYourPhonePage | 356 → 97 lines; extracted `SendYourPhoneForm.tsx` + `SendYourPhonePage.schema.ts` |
 | 2026-05-11 | Harden 4 device-tracking Lambdas | try/catch, env-var validation, consistent DynamoDBDocumentClient |
 | 2026-05-11 | Refresh all docs | ROADMAP phases 13–15, ARCHITECTURE device-tracking section, DECISIONS ADRs, TASK_LOG current task |
+| 2026-05-11 | Launcher → AWS device API wired | Commits `5713341`, `1e9a0e3`, `d594b06` — register on boot, UUID device serial, one-shot cold-start fetch + live onResume reload. End-to-end verified on physical Samsung A12. |
+| 2026-05-11 | Deployed hardened Lambdas via `sam deploy` | Commits `2785405`, `3ab80ed` — migrated get-config / update-config / list-devices from InlineCode → CodeUri + esbuild. Fixed the 2026-05-04 regression where `.js` files contained ES-module syntax and returned 500 on every call. |
+| 2026-05-11 | Launcher self-update mechanism | Commits `6600dc8`, `95a6e89` — GET /releases/latest Lambda + UpdateChecker.kt + banner UI + PackageInstaller flow + SHA-256 verify + self-heal on version mismatch. End-to-end verified: v1 device detected v1.1 manifest, installed via banner tap. |
+| 2026-05-12 | Admin dashboard config editor + launcher status column | Commits `fa4f432`, `7420ab0`, `5a38e88` — new GET /api/devices/:serial/config + GET /api/releases/latest proxy routes, full modal config editor (apps grid, profile dropdown, toggles, advanced JSON), launcher-version ✓/⚠/? column on inventory table, shared app catalogue generated from src/data/apps.ts, DeviceRegistration.kt now reports BuildConfig.VERSION_NAME. |
+| 2026-05-12 | CI/CD for launcher releases + frontend PR checks | `.github/workflows/launcher-release.yml` (tag-triggered, builds+signs+publishes, creates GitHub Release), `.github/workflows/frontend-ci.yml` (lint/typecheck/test/build on PRs), `docs/RELEASING_LAUNCHER.md` operator runbook. |
 
 ## 🔴 Blocked / Pending
 
@@ -76,18 +81,10 @@ None — all critical blockers resolved.
 
 ## ⏭️ Next Up
 
-1. **[SECURITY — MUST DO FIRST]** The current `AWS_DEVICE_API_KEY` is **compromised**. It is in committed git history (commits `657d8d4`, `37ffaf4`) hardcoded in `android/launcher/.../DeviceRegistration.kt` and was previously also hardcoded as a fallback in `admin-server/index.js` (now removed). Actions required, in order:
-   1. Rotate the key in AWS (API Gateway → API Keys → delete old, create new, update Usage Plan)
-   2. Update local `.env` + Netlify env vars with the new key
-   3. Edit `android/launcher/app/src/main/java/com/dogandbonephone/launcher/DeviceRegistration.kt` lines 18–19 with the new key + URL (hardcoded-in-APK is the intended pattern per ADR-011)
-   4. Rebuild + re-sign the launcher APK and redistribute to any already-provisioned devices
-   5. (Optional but recommended) `git filter-repo` or BFG to scrub the old key from history; force-push requires user approval
-2. **[COMMIT]** Single `infra:` commit of `infrastructure/functions/*` + hardened YAML diff + sanitised `.env.example`. Confirm `infrastructure/.aws-sam/` stays gitignored.
-3. **[GO-LIVE]** Switch Stripe to live mode (Section 6 of `userInstructions/DEPLOYMENT.md`). Update Price IDs, configure production webhook, smoke-test.
-4. **[FEATURE]** Wire launcher → AWS device API: `POST /device/register` on boot; periodic `GET /device/config`. Integration guide: `infrastructure/DEVICE_TRACKING.md`.
-5. **[HARDWARE]** Test signed launcher APK on physical Samsung A12 (carry-over from 2026-04-29).
-6. **[ADMIN]** Extend `admin-server/index.js` to call `list-devices` + `update-config` for remote-config push.
-7. **[TESTS]** Add tests for `WiFiForm.tsx`, `ContactsForm.tsx`, `FAQPage.tsx`.
-8. **[PERF]** Route-based code splitting to shrink the 626 KB JS bundle.
-9. **[OPS]** Decide on `deno.lock` — keep + add to `.gitignore`, or remove.
-10. **[OPTIONAL]** Google Analytics / Plausible, AI video generation.
+1. **[SECURITY]** `AWS_DEVICE_API_KEY` is still compromised (in committed git history: `657d8d4`, `37ffaf4`). Rotation ceremony in [infrastructure/DEVICE_TRACKING.md](../infrastructure/DEVICE_TRACKING.md). Now that CI can ship a launcher with a new key automatically, rotation is: create new key in AWS → update `AWS_DEVICE_API_KEY` GitHub secret → push a tag → old key can be disabled once the new APK is on all devices.
+2. **[CI SETUP]** Populate the eight GitHub secrets per [docs/RELEASING_LAUNCHER.md](RELEASING_LAUNCHER.md) and push a throwaway `v99.99` tag to smoke-test the workflow end-to-end. Delete the test release afterwards.
+3. **[RELEASE]** Once CI is verified, tag `v1.2` to push the `BuildConfig.VERSION_NAME` fix (commit `5a38e88`) to the test device. Admin dashboard's Launcher column should flip from ⚠ v1.0.0 → 1.1 to ✓ v1.2.
+4. **[GO-LIVE]** Switch Stripe from test to live mode (Section 6 of `userInstructions/DEPLOYMENT.md`). Update Price IDs, configure production webhook, smoke-test.
+5. **[PERF]** Route-based code splitting to shrink the 626 KB JS bundle.
+6. **[OPS]** Decide on `deno.lock` — already gitignored via a prior cleanup, but the file still lives on disk. Delete if confirmed unused.
+7. **[OPTIONAL]** Google Analytics / Plausible, AI video generation, OIDC migration for CI (replace long-lived IAM keys).
