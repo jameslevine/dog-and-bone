@@ -57,7 +57,19 @@ jobs:
           KEY_PASSWORD: ${{ secrets.LAUNCHER_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          printf '%s' "${KEYSTORE_BASE64}" | base64 -d > android/dog-and-bone-release.keystore
+          # Write the base64 to disk first (pipes can split the secret into chunks
+          # that confuse `base64 -d`), then decode with --ignore-garbage so any
+          # stray whitespace from the secret editor is tolerated.
+          printf '%s' "${KEYSTORE_BASE64}" > /tmp/keystore.b64
+          base64 --decode --ignore-garbage /tmp/keystore.b64 > android/dog-and-bone-release.keystore
+          rm /tmp/keystore.b64
+          # Sanity: Java keystores are at least a couple of KB.
+          ks_size=$(stat -c '%s' android/dog-and-bone-release.keystore)
+          echo "Decoded keystore size: ${ks_size} bytes"
+          if [ "${ks_size}" -lt 1024 ]; then
+            echo "::error::Decoded keystore looks too small — LAUNCHER_KEYSTORE_BASE64 may be malformed."
+            exit 1
+          fi
           cat > android/keystore.properties <<EOF
           storeFile=dog-and-bone-release.keystore
           storePassword=${STORE_PASSWORD}
