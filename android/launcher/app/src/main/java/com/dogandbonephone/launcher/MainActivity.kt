@@ -78,9 +78,17 @@ class MainActivity : AppCompatActivity() {
             applyLargeTextMode()
         }
 
-        // Register device with AWS backend (async, fails silently if no internet)
+        // Register device with AWS backend (async, fails silently if no internet).
+        // Also do a one-shot config fetch at cold-start so the first pull doesn't
+        // have to wait for the hourly worker. Subsequent fetches happen in
+        // ConfigSyncWorker; the onResume path picks up whichever write landed most
+        // recently (either from this call or the worker).
         lifecycleScope.launch {
             DeviceRegistration.registerDevice(this@MainActivity, config)
+            val fetched = DeviceRegistration.checkForConfigUpdates(this@MainActivity)
+            if (fetched != null) {
+                java.io.File(getExternalFilesDir(null), "app-config.json").writeText(fetched)
+            }
         }
 
         // Schedule periodic config sync (every hour)
