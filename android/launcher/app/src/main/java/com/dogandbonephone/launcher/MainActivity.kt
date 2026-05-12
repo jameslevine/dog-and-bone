@@ -95,6 +95,17 @@ class MainActivity : AppCompatActivity() {
         scheduleConfigSync()
     }
 
+    // Config sync strategy:
+    //   1. Cold-start fetch in onCreate() — pulls latest config within ~1s of launch
+    //   2. onResume reload — picks up any config written to disk without a restart
+    //   3. This periodic worker — hourly background pull for long-lived sessions
+    //
+    // Testing note: `adb shell cmd jobscheduler run -f com.dogandbonephone.launcher <id>`
+    // does NOT trigger the worker early. The -f flag overrides battery/connectivity
+    // constraints but not TIMING_DELAY, and periodic jobs persist their next-run
+    // timestamp across cancel/re-enqueue. To test the worker path, either wait for
+    // the natural hourly cycle, or invoke DeviceRegistration.checkForConfigUpdates()
+    // directly (as onCreate already does).
     private fun scheduleConfigSync() {
         val syncWorkRequest = PeriodicWorkRequestBuilder<ConfigSyncWorker>(
             1, TimeUnit.HOURS
