@@ -1,13 +1,13 @@
 package com.dogandbonephone.launcher
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.UUID
 
 /**
  * Device Registration - Registers device with AWS backend
@@ -33,9 +33,9 @@ object DeviceRegistration {
      */
     suspend fun registerDevice(context: Context, config: AppConfig) {
         if (!isConfigured()) return
+        val serial = getDeviceSerial(context)
         withContext(Dispatchers.IO) {
             try {
-                val serial = getDeviceSerial()
                 val url = URL("$API_URL/device/register")
                 val connection = url.openConnection() as HttpURLConnection
 
@@ -75,9 +75,9 @@ object DeviceRegistration {
      */
     suspend fun checkForConfigUpdates(context: Context): String? {
         if (!isConfigured()) return null
+        val serial = getDeviceSerial(context)
         return withContext(Dispatchers.IO) {
             try {
-                val serial = getDeviceSerial()
                 val url = URL("$API_URL/device/config/$serial")
                 val connection = url.openConnection() as HttpURLConnection
 
@@ -102,11 +102,22 @@ object DeviceRegistration {
         }
     }
 
-    private fun getDeviceSerial(): String {
-        return try {
-            Build.getSerial()
-        } catch (e: SecurityException) {
-            Build.SERIAL
-        }
+    /**
+     * Returns a stable per-install device identifier.
+     *
+     * Android apps can't read the hardware serial without privileged permissions,
+     * so we generate a UUID on first launch and persist it in SharedPreferences.
+     * Survives updates + reboots; does NOT survive factory reset (which is fine —
+     * a reset means "start over" and should register as a new device).
+     */
+    private fun getDeviceSerial(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.getString(KEY_DEVICE_ID, null)?.let { return it }
+        val generated = UUID.randomUUID().toString()
+        prefs.edit().putString(KEY_DEVICE_ID, generated).apply()
+        return generated
     }
+
+    private const val PREFS_NAME = "device_registration"
+    private const val KEY_DEVICE_ID = "device_id"
 }
