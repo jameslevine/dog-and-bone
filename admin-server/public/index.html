@@ -133,6 +133,171 @@
     }
 
     .loading { text-align: center; padding: 40px; color: #5A4A3A; }
+
+    /* --- Launcher status pill (inventory table) --- */
+    .launcher-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .launcher-pill.ok { background: #E8F5E9; color: #1B4332; }
+    .launcher-pill.stale { background: #FFF3CD; color: #8B6914; }
+    .launcher-pill.unknown { background: #F5EDD8; color: #5A4A3A; }
+    .launcher-pill.plain { background: #F5EDD8; color: #2C1503; }
+
+    /* --- Config editor modal --- */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 21, 3, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-backdrop[hidden] { display: none; }
+    .modal {
+      background: #FFF8E7;
+      border: 3px solid #2C1503;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 720px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      background: #2C1503;
+      color: #FFB703;
+      padding: 16px 20px;
+      border-radius: 9px 9px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-size: 18px; font-weight: 800; }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: #FFB703;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0 6px;
+    }
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-footer {
+      padding: 12px 20px;
+      background: white;
+      border-top: 2px solid #F5EDD8;
+      border-radius: 0 0 9px 9px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .modal-footer button.secondary {
+      background: white;
+      color: #2C1503;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #2C1503;
+      margin-bottom: 6px;
+    }
+    .field input[type="text"], .field select, .field textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 2px solid #D4C5A9;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      background: white;
+    }
+    .field textarea {
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+      min-height: 180px;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .toggle-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #FFB703;
+    }
+    .apps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+    }
+    .app-category {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #5A4A3A;
+      margin-top: 12px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #E8D5B0;
+    }
+    .app-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 6px;
+    }
+    .app-option:hover { background: white; }
+    .app-option input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: #FFB703;
+    }
+    .app-option .name { font-weight: 600; font-size: 13px; color: #2C1503; }
+    .app-option .pkg {
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 10px;
+      color: #8A7A6A;
+    }
+    details.advanced {
+      margin-top: 16px;
+      padding: 10px;
+      background: #FFF3CD;
+      border: 1px solid #FFB703;
+      border-radius: 6px;
+    }
+    details.advanced summary {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      color: #2C1503;
+    }
+    .modal-inline-status {
+      font-size: 12px;
+      color: #5A4A3A;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    .modal-inline-status.error { color: #C62E3A; }
+    .modal-inline-status.success { color: #1B4332; }
   </style>
 </head>
 <body>
@@ -172,10 +337,77 @@
     </div>
   </div>
 
+  <!-- Config editor modal — shown when the operator clicks Edit Config -->
+  <div class="modal-backdrop" id="config-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="config-modal-title">
+      <div class="modal-header">
+        <h3 id="config-modal-title">Edit device config</h3>
+        <button type="button" class="modal-close" onclick="closeConfigModal()" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="config-modal-loading" class="loading">Loading current config…</div>
+        <form id="config-modal-form" hidden>
+          <div class="field">
+            <label for="cfg-profile">Profile</label>
+            <select id="cfg-profile">
+              <option value="essential">Essential</option>
+              <option value="family">Family</option>
+              <option value="senior">Senior</option>
+              <option value="balance">Balance</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Apps whitelisted on this device</label>
+            <div class="apps-grid" id="cfg-apps"></div>
+          </div>
+
+          <div class="field">
+            <label>Profile features</label>
+            <div class="toggle-row">
+              <input type="checkbox" id="cfg-pinEnabled" />
+              <label for="cfg-pinEnabled" style="margin: 0;">Parental PIN lock (Family)</label>
+            </div>
+            <div class="toggle-row">
+              <input type="checkbox" id="cfg-showEmergencyButton" />
+              <label for="cfg-showEmergencyButton" style="margin: 0;">Emergency SOS button (Senior)</label>
+            </div>
+            <div class="toggle-row">
+              <input type="checkbox" id="cfg-largeText" />
+              <label for="cfg-largeText" style="margin: 0;">Large text mode</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="cfg-emergencyNumber">Emergency number</label>
+            <input type="text" id="cfg-emergencyNumber" placeholder="e.g. 999" />
+          </div>
+
+          <details class="advanced">
+            <summary>Advanced: edit raw JSON</summary>
+            <p style="font-size: 12px; color: #5A4A3A; margin: 8px 0;">
+              Edits here overwrite the form on save. Invalid JSON will block save.
+            </p>
+            <textarea id="cfg-json"></textarea>
+            <div id="cfg-json-error" style="color: #C62E3A; font-size: 12px; margin-top: 6px;"></div>
+          </details>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-inline-status" id="config-modal-status"></div>
+        <button type="button" class="secondary" onclick="closeConfigModal()">Cancel</button>
+        <button type="button" id="cfg-save-btn" onclick="saveConfigModal()">Save &amp; push</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app-catalogue.js"></script>
   <script>
     let currentDevice = null
     let orders = []
     let devices = []
+    let latestRelease = null // { versionCode, versionName, ... } or null if none published
+    let configModalSerial = null // serial of the device currently being edited
 
     // Fetch connected devices
     async function fetchDevices() {
@@ -202,18 +434,53 @@
       }
     }
 
-    // Fetch device inventory from AWS
+    // Fetch device inventory + latest-release manifest in parallel. The manifest
+    // is used by the Launcher column to flag devices that are behind the latest
+    // version. Missing manifest is expected (no release published yet) — render
+    // the plain version with no status icon.
     async function fetchInventory() {
       try {
-        const res = await fetch('/api/devices/inventory')
-        const data = await res.json()
-        devices = data.devices || []
+        const [invRes, relRes] = await Promise.all([
+          fetch('/api/devices/inventory'),
+          fetch('/api/releases/latest'),
+        ])
+        const inv = await invRes.json()
+        devices = inv.devices || []
+        if (relRes.ok) {
+          latestRelease = await relRes.json()
+        } else {
+          latestRelease = null
+        }
         renderInventory()
       } catch (error) {
         console.error('Failed to fetch inventory:', error)
         document.getElementById('inventory-container').innerHTML =
           '<div class="alert alert-error">Failed to load device inventory.</div>'
       }
+    }
+
+    // Compare device.launcherVersion to manifest.versionName. Simple lexical
+    // comparison — fine for monotonic dotted versions up to v9.x. TODO: switch
+    // to numeric versionCode comparison once the launcher reports both fields.
+    function renderLauncherStatus(device) {
+      const installed = device.launcherVersion
+      if (!installed) {
+        return '<span class="launcher-pill unknown" title="No version reported">? v—</span>'
+      }
+      if (!latestRelease || !latestRelease.versionName) {
+        // No manifest published yet — just show the installed version plainly.
+        return `<span class="launcher-pill plain">v${installed}</span>`
+      }
+      const latest = latestRelease.versionName
+      if (installed === latest) {
+        return `<span class="launcher-pill ok" title="Up to date">✓ v${installed}</span>`
+      }
+      if (installed < latest) {
+        return `<span class="launcher-pill stale" title="Latest is v${latest}">⚠ v${installed} → ${latest}</span>`
+      }
+      // Device reports a newer version than the manifest (e.g. dev build). Treat
+      // as OK — nothing to push down.
+      return `<span class="launcher-pill ok" title="Newer than published manifest (v${latest})">v${installed}</span>`
     }
 
     // Fetch Stripe orders
@@ -247,6 +514,7 @@
               <th>Serial</th>
               <th>Order ID</th>
               <th>Profile</th>
+              <th>Launcher</th>
               <th>Last Seen</th>
               <th>Config Ver</th>
               <th>Actions</th>
@@ -263,12 +531,13 @@
                 <td><code>${device.deviceSerial}</code></td>
                 <td><code>${device.orderId.substring(0, 15)}...</code></td>
                 <td><span class="badge badge-profile">${device.profileId}</span></td>
+                <td>${renderLauncherStatus(device)}</td>
                 <td style="color: ${isOnline ? '#2D6A4F' : '#E63946'}">
                   ${hoursAgo < 1 ? 'Just now' : hoursAgo + 'h ago'}
                 </td>
                 <td>v${device.configVersion || 1}</td>
                 <td>
-                  <button onclick="editConfig('${device.deviceSerial}')" style="font-size: 12px; padding: 6px 12px;">
+                  <button onclick="openConfigModal('${device.deviceSerial}')" style="font-size: 12px; padding: 6px 12px;">
                     Edit Config
                   </button>
                 </td>
@@ -392,34 +661,219 @@
       }
     }
 
-    // Edit device configuration
-    function editConfig(serial) {
+    // ==== Config editor modal ====
+    //
+    // Flow:
+    //   1. openConfigModal(serial) → GET /api/devices/:serial/config → populate the
+    //      form + raw JSON textarea.
+    //   2. User edits form fields; raw JSON stays in sync on blur of either side.
+    //   3. Save → build the config from whichever surface was edited last →
+    //      PUT /api/devices/:serial/config → close modal + refresh inventory.
+
+    function openConfigModal(serial) {
       const device = devices.find(d => d.deviceSerial === serial)
       if (!device) {
-        alert('Device not found')
+        alert('Device not found in inventory')
         return
       }
+      configModalSerial = serial
 
-      // Simple prompt for now - can be enhanced to full modal editor
-      const newApps = prompt(`Edit app list for ${serial}\n\nCurrent apps: ${device.appList.join(', ')}\n\nEnter new comma-separated app IDs:`, device.appList.join(','))
+      document.getElementById('config-modal-title').textContent = `Edit config — ${serial}`
+      document.getElementById('config-modal').hidden = false
+      document.getElementById('config-modal-loading').hidden = false
+      document.getElementById('config-modal-form').hidden = true
+      setModalStatus('')
 
-      if (newApps === null) return // Cancelled
+      // Render the apps grid now so it's visible as soon as loading finishes.
+      // Grouped by category; options sourced from window.APP_CATALOGUE.
+      renderAppsGrid()
 
-      const config = {
-        profile: device.profileId,
-        apps: newApps.split(',').map(a => a.trim()).filter(Boolean),
-        showEmergencyButton: device.profileId === 'senior',
-        pinEnabled: device.profileId === 'family',
-        emergencyNumber: device.profileId === 'senior' ? '999' : '',
-        largeText: device.profileId === 'senior'
+      fetch(`/api/devices/${serial}/config`)
+        .then(async res => {
+          if (res.status === 404) {
+            // Device registered but hasn't received a config yet — start from profile defaults.
+            return buildProfileDefaults(device.profileId)
+          }
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          return res.json()
+        })
+        .then(config => {
+          populateConfigModal(config)
+          document.getElementById('config-modal-loading').hidden = true
+          document.getElementById('config-modal-form').hidden = false
+        })
+        .catch(err => {
+          document.getElementById('config-modal-loading').innerHTML =
+            `<div class="alert alert-error">Failed to load config: ${err.message}</div>`
+        })
+    }
+
+    function closeConfigModal() {
+      document.getElementById('config-modal').hidden = true
+      configModalSerial = null
+    }
+
+    function renderAppsGrid() {
+      const grid = document.getElementById('cfg-apps')
+      const catalogue = window.APP_CATALOGUE || []
+      if (!catalogue.length) {
+        grid.innerHTML = '<p style="color: #C62E3A;">App catalogue not loaded.</p>'
+        return
       }
+      // Group by category, preserving first-seen order per category.
+      const byCategory = {}
+      for (const app of catalogue) {
+        if (!byCategory[app.category]) byCategory[app.category] = []
+        byCategory[app.category].push(app)
+      }
+      grid.innerHTML = Object.entries(byCategory).map(([category, apps]) => `
+        <div class="app-category">${category}</div>
+        ${apps.map(app => `
+          <label class="app-option">
+            <input type="checkbox" class="cfg-app-check" data-package="${app.packageName}" />
+            <span>
+              <span class="name">${app.name}</span><br>
+              <span class="pkg">${app.packageName}</span>
+            </span>
+          </label>
+        `).join('')}
+      `).join('')
+    }
 
-      if (confirm(`Push new config to ${serial}?\n\nDevice will apply changes on next restart.`)) {
-        updateDeviceConfig(serial, config)
+    function populateConfigModal(config) {
+      document.getElementById('cfg-profile').value = config.profile || 'essential'
+      document.getElementById('cfg-pinEnabled').checked = !!config.pinEnabled
+      document.getElementById('cfg-showEmergencyButton').checked = !!config.showEmergencyButton
+      document.getElementById('cfg-largeText').checked = !!config.largeText
+      document.getElementById('cfg-emergencyNumber').value = config.emergencyNumber || ''
+
+      const apps = new Set(config.apps || [])
+      document.querySelectorAll('.cfg-app-check').forEach(cb => {
+        cb.checked = apps.has(cb.dataset.package)
+      })
+
+      syncJsonFromForm()
+    }
+
+    // Build the defaults for a profile from the catalogue. Used when a device
+    // has no config yet, or when the operator switches profiles.
+    function buildProfileDefaults(profileId) {
+      const apps = (window.APP_CATALOGUE || [])
+        .filter(a => a.defaultInProfiles.includes(profileId))
+        .map(a => a.packageName)
+      return {
+        profile: profileId,
+        apps,
+        showEmergencyButton: profileId === 'senior',
+        pinEnabled: profileId === 'family',
+        emergencyNumber: profileId === 'senior' ? '999' : '',
+        largeText: profileId === 'senior',
       }
     }
 
-    // Update device config via API
+    // Handle profile change: offer to reset apps + toggles to that profile's defaults.
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.id === 'cfg-profile') {
+        const newProfile = e.target.value
+        if (confirm(`Reset apps and profile features to the ${newProfile} defaults?`)) {
+          populateConfigModal(buildProfileDefaults(newProfile))
+        } else {
+          syncJsonFromForm()
+        }
+      } else if (e.target && (e.target.classList.contains('cfg-app-check') ||
+                              e.target.id.startsWith('cfg-') && e.target.id !== 'cfg-json')) {
+        syncJsonFromForm()
+      }
+    })
+
+    // Build a config object from the form controls. Dedupe the apps list —
+    // some catalogue entries (e.g. Clock & Alarm + World Clock) share a single
+    // Android package, and both checkboxes would otherwise emit the same entry.
+    function readConfigFromForm() {
+      const apps = Array.from(new Set(
+        Array.from(document.querySelectorAll('.cfg-app-check'))
+          .filter(cb => cb.checked)
+          .map(cb => cb.dataset.package)
+      ))
+      return {
+        profile: document.getElementById('cfg-profile').value,
+        apps,
+        pinEnabled: document.getElementById('cfg-pinEnabled').checked,
+        showEmergencyButton: document.getElementById('cfg-showEmergencyButton').checked,
+        largeText: document.getElementById('cfg-largeText').checked,
+        emergencyNumber: document.getElementById('cfg-emergencyNumber').value.trim(),
+      }
+    }
+
+    // Keep the advanced JSON textarea in sync when the form changes.
+    function syncJsonFromForm() {
+      document.getElementById('cfg-json').value = JSON.stringify(readConfigFromForm(), null, 2)
+      document.getElementById('cfg-json-error').textContent = ''
+      document.getElementById('cfg-save-btn').disabled = false
+    }
+
+    // When the user edits raw JSON, validate on blur and mirror back to the form.
+    document.addEventListener('blur', (e) => {
+      if (e.target && e.target.id === 'cfg-json') {
+        try {
+          const parsed = JSON.parse(e.target.value)
+          populateConfigModal(parsed) // also repopulates form
+          // populateConfigModal calls syncJsonFromForm which clears error + re-enables save
+        } catch (err) {
+          document.getElementById('cfg-json-error').textContent = `Invalid JSON: ${err.message}`
+          document.getElementById('cfg-save-btn').disabled = true
+        }
+      }
+    }, true)
+
+    async function saveConfigModal() {
+      if (!configModalSerial) return
+
+      // Prefer the raw JSON textarea if it's been manually edited and parses;
+      // otherwise build from the form. The textarea is kept in sync on every
+      // form change so either path returns equivalent data.
+      let config
+      try {
+        config = JSON.parse(document.getElementById('cfg-json').value)
+      } catch (err) {
+        setModalStatus(`Invalid JSON: ${err.message}`, 'error')
+        return
+      }
+
+      setModalStatus('Saving…')
+      document.getElementById('cfg-save-btn').disabled = true
+
+      try {
+        const res = await fetch(`/api/devices/${configModalSerial}/config`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config),
+        })
+
+        if (!res.ok) {
+          const error = await res.json().catch(() => ({}))
+          throw new Error(error.details || error.error || `HTTP ${res.status}`)
+        }
+
+        setModalStatus('Saved. Device will apply on next sync.', 'success')
+        setTimeout(() => {
+          closeConfigModal()
+          fetchInventory()
+        }, 700)
+      } catch (err) {
+        setModalStatus(`Failed: ${err.message}`, 'error')
+        document.getElementById('cfg-save-btn').disabled = false
+      }
+    }
+
+    function setModalStatus(text, variant) {
+      const el = document.getElementById('config-modal-status')
+      el.textContent = text
+      el.className = 'modal-inline-status' + (variant ? ' ' + variant : '')
+    }
+
+    // Legacy fallback — still used by nothing, but preserved in case anything
+    // else in the UI pings it.
     async function updateDeviceConfig(serial, config) {
       try {
         const res = await fetch(`/api/devices/${serial}/config`, {
@@ -429,8 +883,8 @@
         })
 
         if (res.ok) {
-          alert(`✅ Config updated for ${serial}!\n\nDevice will apply changes within 1 hour (next config sync).`)
-          fetchInventory() // Refresh inventory
+          alert(`✅ Config updated for ${serial}!`)
+          fetchInventory()
         } else {
           const error = await res.json()
           alert(`Failed to update config: ${error.details || error.error}`)

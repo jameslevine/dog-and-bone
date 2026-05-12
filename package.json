@@ -16,6 +16,8 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "generate:ai-assets": "tsx scripts/generate-ai-assets.ts",
+    "generate:admin-catalogue": "tsx scripts/generate-admin-catalogue.ts",
+    "prebuild": "npm run generate:admin-catalogue",
     "prepare": "husky"
   },
   "lint-staged": {
