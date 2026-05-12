@@ -444,6 +444,10 @@
           fetch('/api/devices/inventory'),
           fetch('/api/releases/latest'),
         ])
+        if (!invRes.ok) {
+          const err = await invRes.json().catch(() => ({}))
+          throw new Error(err.details || err.error || `HTTP ${invRes.status}`)
+        }
         const inv = await invRes.json()
         devices = inv.devices || []
         if (relRes.ok) {
@@ -455,7 +459,7 @@
       } catch (error) {
         console.error('Failed to fetch inventory:', error)
         document.getElementById('inventory-container').innerHTML =
-          '<div class="alert alert-error">Failed to load device inventory.</div>'
+          `<div class="alert alert-error">Failed to load device inventory: ${error.message}</div>`
       }
     }
 
@@ -487,13 +491,17 @@
     async function fetchOrders() {
       try {
         const res = await fetch('/api/orders')
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.details || err.error || `HTTP ${res.status}`)
+        }
         const data = await res.json()
         orders = data.orders || []
         renderOrders()
       } catch (error) {
         console.error('Failed to fetch orders:', error)
         document.getElementById('orders-container').innerHTML =
-          '<div class="alert alert-error">Failed to load orders. Check network connection.</div>'
+          `<div class="alert alert-error">Failed to load orders: ${error.message}</div>`
       }
     }
 

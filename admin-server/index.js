@@ -17,10 +17,32 @@ import { promisify } from 'util'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
+import { readFileSync, existsSync } from 'fs'
 
 const execAsync = promisify(exec)
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+// Load .env files (root first, then admin-server/.env if it exists). Kept as a
+// small inline loader rather than pulling in the `dotenv` dependency — this is
+// a local-dev tool, minimal surface.
+function loadEnvFile(filePath) {
+  if (!existsSync(filePath)) return
+  for (const line of readFileSync(filePath, 'utf8').split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eq = trimmed.indexOf('=')
+    if (eq === -1) continue
+    const key = trimmed.slice(0, eq).trim()
+    const value = trimmed
+      .slice(eq + 1)
+      .trim()
+      .replace(/^['"]|['"]$/g, '')
+    if (!(key in process.env)) process.env[key] = value
+  }
+}
+loadEnvFile(path.join(__dirname, '..', '.env'))
+loadEnvFile(path.join(__dirname, '.env'))
 
 const app = express()
 const PORT = Number(process.env.PORT) || 3000
