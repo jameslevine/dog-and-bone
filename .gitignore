@@ -47,3 +47,6 @@ infrastructure/.aws-sam/
 
 # Deno lockfile (not used by this project — Netlify Edge artifact)
 deno.lock
+
+# Playwright MCP debug output
+.playwright-mcp/

@@ -23,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
-const PORT = 3000
+const PORT = Number(process.env.PORT) || 3000
 
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
@@ -182,6 +182,66 @@ app.get('/api/devices/inventory', async (req, res) => {
     res.json(data)
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch device inventory', details: error.message })
+  }
+})
+
+// Read a device's current config from S3 (used by the edit modal to prefill).
+app.get('/api/devices/:serial/config', async (req, res) => {
+  try {
+    const { serial } = req.params
+    const awsApiUrl = process.env.AWS_DEVICE_API_URL
+    const awsApiKey = process.env.AWS_DEVICE_API_KEY
+    if (!awsApiUrl || !awsApiKey) {
+      return res
+        .status(500)
+        .json({ error: 'AWS_DEVICE_API_URL and AWS_DEVICE_API_KEY must be set' })
+    }
+
+    const response = await fetch(`${awsApiUrl}/device/config/${serial}`, {
+      headers: { 'x-api-key': awsApiKey },
+    })
+
+    if (response.status === 404) {
+      return res.status(404).json({ error: 'No config found for this device' })
+    }
+    if (!response.ok) {
+      throw new Error(`AWS returned HTTP ${response.status}`)
+    }
+
+    const data = await response.json()
+    res.json(data)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch config', details: error.message })
+  }
+})
+
+// Fetch the latest launcher release manifest (used for the inventory status column).
+// Transparently passes 404 through when no manifest has been published yet.
+app.get('/api/releases/latest', async (req, res) => {
+  try {
+    const awsApiUrl = process.env.AWS_DEVICE_API_URL
+    const awsApiKey = process.env.AWS_DEVICE_API_KEY
+    if (!awsApiUrl || !awsApiKey) {
+      return res
+        .status(500)
+        .json({ error: 'AWS_DEVICE_API_URL and AWS_DEVICE_API_KEY must be set' })
+    }
+
+    const response = await fetch(`${awsApiUrl}/releases/latest`, {
+      headers: { 'x-api-key': awsApiKey },
+    })
+
+    if (response.status === 404) {
+      return res.status(404).json({ error: 'No release manifest published' })
+    }
+    if (!response.ok) {
+      throw new Error(`AWS returned HTTP ${response.status}`)
+    }
+
+    const data = await response.json()
+    res.json(data)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch release manifest', details: error.message })
   }
 })
 
