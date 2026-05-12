@@ -210,6 +210,40 @@ Resources:
         External:
           - '@aws-sdk/*'
 
+  # ===== Lambda Function: Get Latest Release =====
+  GetLatestReleaseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub dog-and-bone-get-latest-release-${Environment}
+      CodeUri: functions/get-latest-release/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      MemorySize: 256
+      Timeout: 10
+      Environment:
+        Variables:
+          CONFIG_BUCKET: !Ref ConfigBucket
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref ConfigBucket
+      Events:
+        GetLatestRelease:
+          Type: Api
+          Properties:
+            Path: /releases/latest
+            Method: GET
+            RestApiId: !Ref DeviceApi
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - index.mjs
+        External:
+          - '@aws-sdk/*'
+
   # ===== API Gateway =====
   DeviceApi:
     Type: AWS::Serverless::Api
