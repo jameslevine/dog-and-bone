@@ -110,6 +110,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub dog-and-bone-get-config-${Environment}
+      CodeUri: functions/get-config/
       Handler: index.handler
       Runtime: nodejs20.x
       MemorySize: 256
@@ -127,50 +128,23 @@ Resources:
             Path: /device/config/{serial}
             Method: GET
             RestApiId: !Ref DeviceApi
-      InlineCode: |
-        import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
-
-        const s3 = new S3Client({})
-
-        export const handler = async (event) => {
-          const serial = event.pathParameters?.serial
-
-          if (!serial) {
-            return {
-              statusCode: 400,
-              body: JSON.stringify({ error: 'Device serial required' }),
-            }
-          }
-
-          try {
-            const response = await s3.send(new GetObjectCommand({
-              Bucket: process.env.CONFIG_BUCKET,
-              Key: `devices/${serial}/app-config.json`,
-            }))
-
-            const config = await response.Body.transformToString()
-
-            return {
-              statusCode: 200,
-              headers: { 'Content-Type': 'application/json' },
-              body: config,
-            }
-          } catch (error) {
-            if (error.name === 'NoSuchKey') {
-              return {
-                statusCode: 404,
-                body: JSON.stringify({ error: 'No config found for this device' }),
-              }
-            }
-            throw error
-          }
-        }
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - index.mjs
+        External:
+          - '@aws-sdk/*'
 
   # ===== Lambda Function: Update Device Config =====
   UpdateConfigFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub dog-and-bone-update-config-${Environment}
+      CodeUri: functions/update-config/
       Handler: index.handler
       Runtime: nodejs20.x
       MemorySize: 256
@@ -191,55 +165,23 @@ Resources:
             Path: /device/config/{serial}
             Method: PUT
             RestApiId: !Ref DeviceApi
-      InlineCode: |
-        import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-        import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-        import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb'
-
-        const s3 = new S3Client({})
-        const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}))
-
-        export const handler = async (event) => {
-          const serial = event.pathParameters?.serial
-          const config = event.body
-
-          if (!serial || !config) {
-            return {
-              statusCode: 400,
-              body: JSON.stringify({ error: 'Serial and config required' }),
-            }
-          }
-
-          // Save new config to S3
-          await s3.send(new PutObjectCommand({
-            Bucket: process.env.CONFIG_BUCKET,
-            Key: `devices/${serial}/app-config.json`,
-            Body: config,
-            ContentType: 'application/json',
-          }))
-
-          // Update device record
-          await ddb.send(new UpdateCommand({
-            TableName: process.env.DEVICE_TABLE,
-            Key: { deviceSerial: serial },
-            UpdateExpression: 'SET configVersion = configVersion + :inc, lastConfigUpdate = :now',
-            ExpressionAttributeValues: {
-              ':inc': 1,
-              ':now': new Date().toISOString(),
-            },
-          }))
-
-          return {
-            statusCode: 200,
-            body: JSON.stringify({ success: true, serial }),
-          }
-        }
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - index.mjs
+        External:
+          - '@aws-sdk/*'
 
   # ===== Lambda Function: List All Devices =====
   ListDevicesFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub dog-and-bone-list-devices-${Environment}
+      CodeUri: functions/list-devices/
       Handler: index.handler
       Runtime: nodejs20.x
       MemorySize: 256
@@ -257,25 +199,16 @@ Resources:
             Path: /devices
             Method: GET
             RestApiId: !Ref DeviceApi
-      InlineCode: |
-        import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb'
-        import { unmarshall } from '@aws-sdk/util-dynamodb'
-
-        const ddb = new DynamoDBClient({})
-
-        export const handler = async () => {
-          const response = await ddb.send(new ScanCommand({
-            TableName: process.env.DEVICE_TABLE,
-          }))
-
-          const devices = (response.Items || []).map(item => unmarshall(item))
-
-          return {
-            statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ devices }),
-          }
-        }
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - index.mjs
+        External:
+          - '@aws-sdk/*'
 
   # ===== API Gateway =====
   DeviceApi:
